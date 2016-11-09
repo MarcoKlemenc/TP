@@ -15,7 +15,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 
@@ -24,15 +23,21 @@ class Dibujo extends JComponent {
 	private static final long serialVersionUID = 1L;
 	private List<Habitacion> piso = new ArrayList<Habitacion>();
 	private List<Puerta> puertas = new ArrayList<Puerta>();
+	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
 	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
 	private Point inicio, fin;
-	private int desvioX, desvioY;
-	private Integer orientacion = 0;
+	private int desvioX, desvioY, orientacion;
 	private Habitacion actual, temp;
 	private Baldosa orig, dest;
-	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
 	private boolean shift, ctrl;
 	private String escala = "5m";
+
+	private void ajustarOrientacion() {
+		orientacion += 90;
+		if (orientacion >= 360) {
+			orientacion -= 360;
+		}
+	}
 
 	private List<Habitacion> contiene(MouseEvent e) {
 		List<Habitacion> l = new ArrayList<Habitacion>();
@@ -48,6 +53,15 @@ class Dibujo extends JComponent {
 		for (Baldosa b : actual.getBaldosas()) {
 			if (b.contiene(e.getX(), e.getY())) {
 				return b;
+			}
+		}
+		return null;
+	}
+
+	private Puerta contieneP(MouseEvent e) {
+		for (Puerta p : puertas) {
+			if (p.contiene(e.getX(), e.getY())) {
+				return p;
 			}
 		}
 		return null;
@@ -86,6 +100,11 @@ class Dibujo extends JComponent {
 			public void mouseClicked(MouseEvent e) {
 				List<Habitacion> l = contiene(e);
 				if (SwingUtilities.isLeftMouseButton(e)) {
+					Puerta p = contieneP(e);
+					if (p != null) {
+						puertas.remove(p);
+						return;
+					}
 					if (l.size() == 1) {
 						actual = l.get(0);
 						Baldosa b = contieneB(e);
@@ -105,17 +124,12 @@ class Dibujo extends JComponent {
 							orig = b;
 						}
 						dest = null;
-					} else if (l.size() == 2) {
+					} else if (l.size() == 2 && p == null) {
 						Habitacion h1 = l.get(0);
 						Habitacion h2 = l.get(1);
-						puertas.add(new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2));
+						puertas.add(new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2, true));
 						adyacencias.get(h1).add(h2);
 						adyacencias.get(h2).add(h1);
-					}
-				} else if (SwingUtilities.isMiddleMouseButton(e)) {
-					if (l.size() == 1) {
-						actual = l.get(0);
-						contieneB(e).cambiarPasar();
 					}
 				}
 			}
@@ -144,6 +158,11 @@ class Dibujo extends JComponent {
 						adyacencias.remove(l.get(0));
 						piso.remove(l.get(0));
 						puertas.removeAll(puertasBorrar);
+					}
+				} else if (SwingUtilities.isMiddleMouseButton(e)){
+					if (l.size() == 1) {
+						actual = l.get(0);
+						contieneB(e).cambiarPasar();
 					}
 				}
 				repaint();
@@ -183,6 +202,13 @@ class Dibujo extends JComponent {
 						int y = e.getY() - actual.getY();
 						List<Habitacion> l = cruza(actual);
 						if (shift && !ctrl) {
+							Puerta p = contieneP(e);
+							if (p != null){
+								System.out.println("A");
+								p.setAlto(e.getY() - p.getY());
+								repaint();
+								return;
+							}
 							if (actual.getLargo() <= 2 || actual.getAlto() <= 2) {
 								piso.remove(actual);
 								repaint();
@@ -273,22 +299,13 @@ class Dibujo extends JComponent {
 		Graphics2D g2 = (Graphics2D) g;
 		int orientacionVieja = orientacion;
 		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		g2.drawString(orientacion.toString(), getWidth() / 2, 15);
-		orientacion += 90;
-		if (orientacion >= 360) {
-			orientacion -= 360;
-		}
-		g2.drawString(orientacion.toString(), getWidth() - 20, getHeight() / 2 - 5);
-		orientacion += 90;
-		if (orientacion >= 360) {
-			orientacion -= 360;
-		}
-		g2.drawString(orientacion.toString(), getWidth() / 2, getHeight() - 5);
-		orientacion += 90;
-		if (orientacion >= 360) {
-			orientacion -= 360;
-		}
-		g2.drawString(orientacion.toString(), 0, getHeight() / 2 - 5);
+		g2.drawString(String.valueOf(orientacion), getWidth() / 2, 15);
+		ajustarOrientacion();
+		g2.drawString(String.valueOf(orientacion), getWidth() - 20, getHeight() / 2 - 5);
+		ajustarOrientacion();
+		g2.drawString(String.valueOf(orientacion), getWidth() / 2, getHeight() - 5);
+		ajustarOrientacion();
+		g2.drawString(String.valueOf(orientacion), 0, getHeight() / 2 - 5);
 		orientacion = orientacionVieja;
 		g2.setPaint(Color.WHITE);
 		g2.fillRect(20, 20, getWidth() - 40, getHeight() - 40);
@@ -309,15 +326,14 @@ class Dibujo extends JComponent {
 			}
 			g2.setPaint(Color.BLACK);
 			g2.draw(h.getForma());
+			g2.setPaint(Color.CYAN);
 			for (Trayectoria t : trayectorias) {
 				if (t.getHabitacion() == h) {
-					g2.setPaint(Color.CYAN);
 					for (Baldosa b : t.getCamino()) {
 						g2.fillRect(b.getX() + 1, b.getY() + 1, b.getLargo() - 1, b.getAlto() - 1);
 					}
 				}
 			}
-
 		}
 		if (orig != null) {
 			g2.setPaint(new Color(0, 255, 255, 64));
@@ -346,6 +362,14 @@ class Dibujo extends JComponent {
 
 	public void setPiso(List<Habitacion> piso) {
 		this.piso = piso;
+	}
+
+	public List<Trayectoria> getTrayectorias() {
+		return trayectorias;
+	}
+
+	public void setTrayectorias(List<Trayectoria> trayectorias) {
+		this.trayectorias = trayectorias;
 	}
 
 	public String getEscala() {

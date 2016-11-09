@@ -69,7 +69,7 @@ public class Habitacion extends Superficie {
 	}
 
 	public Trayectoria generarTrayectoria(int filaA, int columnaA, int filaB, int columnaB) {
-		Trayectoria t = new Trayectoria(obtenerBaldosa(filaA, columnaA), obtenerBaldosa(filaB, columnaB), this);
+		Trayectoria t = new Trayectoria(this);
 		while (filaA != filaB || columnaA != columnaB) {
 			Baldosa b = obtenerBaldosa(filaA, columnaA);
 			if (b.isPasar()) {

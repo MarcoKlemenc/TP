@@ -86,6 +86,14 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 							h.obtenerBaldosa(Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()))
 									.cambiarPasar();
 						}
+						/*
+						 * String trayectorias = st.nextToken(); to = new
+						 * StringTokenizer(trayectorias, "Ç"); while
+						 * (to.hasMoreTokens()) { Trayectoria t = new
+						 * Trayectoria(null); dibujo.getTrayectorias().add(t);
+						 * h.obtenerBaldosa(Integer.parseInt(to.nextToken()),
+						 * Integer.parseInt(to.nextToken())) .cambiarPasar(); }
+						 */
 					}
 					dibujo.setPiso(piso);
 					dibujo.repaint();
@@ -111,10 +119,19 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 						Point p = t.next();
 						export += (int) p.getX() + "&" + (int) p.getY() + "&";
 					}
+					/*
+					 * export += "|"; ListIterator<Trayectoria> it =
+					 * dibujo.getTrayectorias().listIterator(); while
+					 * (it.hasNext()) { ListIterator<Baldosa> ite =
+					 * it.next().getCamino().listIterator(); while
+					 * (ite.hasNext()) { Baldosa b = ite.next(); export +=
+					 * b.getX() + "Ç" + b.getY() + "Ç" + b.getLargo() + "Ç" +
+					 * b.getAlto() + "Ç" + b.getFila() + "Ç" + b.getColumna() +
+					 * "Ç"; } }
+					 */
 					export = export.substring(0, export.length() - 1);
 					export += "|";
 				}
-
 				try {
 					Files.write(Paths.get(archivo), export.substring(0, export.length() - 1).getBytes());
 				} catch (IOException ex) {
