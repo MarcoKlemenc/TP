@@ -30,7 +30,7 @@ class Dibujo extends JComponent {
 	private Integer orientacion = 0;
 	private Habitacion actual, temp;
 	private Baldosa orig, dest;
-	private Trayectoria tr;
+	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
 	private boolean shift, ctrl;
 	private String escala = "5m";
 
@@ -91,15 +91,20 @@ class Dibujo extends JComponent {
 						Baldosa b = contieneB(e);
 						if (orig != null && dest == null) {
 							dest = b;
-							tr = actual.generarTrayectoria(orig.getFila(), orig.getColumna(), dest.getFila(),
-									dest.getColumna());
+							trayectorias.add(actual.generarTrayectoria(orig.getFila(), orig.getColumna(),
+									dest.getFila(), dest.getColumna()));
+							orig = null;
 						} else {
-							orig = b;
-							if (dest != null) {
-								tr = null;
-								dest = null;
+							// mejorar para que borre más de una, si se cruzan?
+							for (Trayectoria t : trayectorias) {
+								if (t.getCamino().contains(b)) {
+									trayectorias.remove(t);
+									return;
+								}
 							}
+							orig = b;
 						}
+						dest = null;
 					} else if (l.size() == 2) {
 						Habitacion h1 = l.get(0);
 						Habitacion h2 = l.get(1);
@@ -108,7 +113,8 @@ class Dibujo extends JComponent {
 						adyacencias.get(h2).add(h1);
 					}
 				} else if (SwingUtilities.isMiddleMouseButton(e)) {
-					if (actual != null) {
+					if (l.size() == 1) {
+						actual = l.get(0);
 						contieneB(e).cambiarPasar();
 					}
 				}
@@ -116,6 +122,7 @@ class Dibujo extends JComponent {
 
 			public void mousePressed(MouseEvent e) {
 				List<Habitacion> l = contiene(e);
+				List<Puerta> puertasBorrar = new ArrayList<Puerta>();
 				if (SwingUtilities.isLeftMouseButton(e)) {
 					if (l.size() == 1) {
 						actual = l.get(0);
@@ -125,8 +132,19 @@ class Dibujo extends JComponent {
 						inicio = new Point(e.getX(), e.getY());
 					}
 				} else if (SwingUtilities.isRightMouseButton(e)) {
-					if (l.size() == 1)
+					if (l.size() == 1) {
+						for (Puerta p : puertas) {
+							if (p.getH1() == l.get(0) || p.getH2() == l.get(0)) {
+								puertasBorrar.add(p);
+							}
+						}
+						for (Set<Habitacion> s : adyacencias.values()) {
+							s.remove(l.get(0));
+						}
+						adyacencias.remove(l.get(0));
 						piso.remove(l.get(0));
+						puertas.removeAll(puertasBorrar);
+					}
 				}
 				repaint();
 			}
@@ -145,6 +163,7 @@ class Dibujo extends JComponent {
 				}
 				inicio = null;
 				fin = null;
+				actual = null;
 				repaint();
 			}
 		});
@@ -192,7 +211,7 @@ class Dibujo extends JComponent {
 									}
 								}
 							}
-						} if (!shift && ctrl) {
+						} else if (!shift && ctrl) {
 							actual.setLado(Math.max(2, x));
 						} else {
 							x = e.getX() - desvioX;
@@ -290,16 +309,22 @@ class Dibujo extends JComponent {
 			}
 			g2.setPaint(Color.BLACK);
 			g2.draw(h.getForma());
-			if (tr != null && tr.getHabitacion() == h) {
-				g2.setPaint(Color.CYAN);
-				for (Baldosa b : tr.getCamino()) {
-					g2.fillRect(b.getX() + 1, b.getY() + 1, b.getLargo() - 1, b.getAlto() - 1);
+			for (Trayectoria t : trayectorias) {
+				if (t.getHabitacion() == h) {
+					g2.setPaint(Color.CYAN);
+					for (Baldosa b : t.getCamino()) {
+						g2.fillRect(b.getX() + 1, b.getY() + 1, b.getLargo() - 1, b.getAlto() - 1);
+					}
 				}
 			}
+
+		}
+		if (orig != null) {
+			g2.setPaint(new Color(0, 255, 255, 64));
+			g2.fillRect(orig.getX() + 1, orig.getY() + 1, orig.getLargo() - 1, orig.getAlto() - 1);
 		}
 		for (Puerta p : puertas) {
 			g2.setPaint(Color.BLACK);
-			// g2.draw(p.getForma());
 			g2.fill(p.getForma());
 		}
 		if (inicio != null && fin != null) {
