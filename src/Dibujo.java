@@ -194,11 +194,15 @@ class Dibujo extends JComponent {
 		this.addMouseMotionListener(new MouseMotionAdapter() {
 			public void mouseDragged(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e)) {
+					Puerta p = contieneP(e);
+					if (p != null) {
+						p.setAlto(e.getY() - p.getY());
+					}
 					if (actual == null) {
 						fin = new Point(e.getX(), e.getY());
 					} else {
-						for (Puerta p : puertas) {
-							if (p.getH1() == actual || p.getH2() == actual) {
+						for (Puerta pu : puertas) {
+							if ((pu.getH1() == actual || pu.getH2() == actual) && !ctrl) {
 								actual = null;
 								return;
 							}
@@ -207,13 +211,6 @@ class Dibujo extends JComponent {
 						int y = e.getY() - actual.getY();
 						List<Habitacion> l = cruza(actual);
 						if (shift && !ctrl) {
-							Puerta p = contieneP(e);
-							if (p != null) {
-								System.out.println("A");
-								p.setAlto(e.getY() - p.getY());
-								repaint();
-								return;
-							}
 							if (actual.getLargo() <= 2 || actual.getAlto() <= 2) {
 								piso.remove(actual);
 								repaint();

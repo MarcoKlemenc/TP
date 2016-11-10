@@ -20,8 +20,7 @@ public class Archivo {
 			s.close();
 		} catch (FileNotFoundException e) {
 		}
-		int d = fc.showOpenDialog(fc);
-		return d == JFileChooser.APPROVE_OPTION ? fc.getSelectedFile().toString() : null;
+		return fc.showOpenDialog(fc) == JFileChooser.APPROVE_OPTION ? fc.getSelectedFile().toString() : null;
 	}
 
 	public static String guardar(String extension) {
