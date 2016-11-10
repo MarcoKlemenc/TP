@@ -63,10 +63,10 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 		if (origen == "Abrir") {
 			String archivo = Archivo.abrir(".txt");
 			if (archivo != null) {
-				List<Habitacion> piso = new ArrayList<Habitacion>();
 				String escalaBackup = dibujo.getEscala();
 				List<Habitacion> pisoBackup = dibujo.getPiso();
 				try {
+					List<Habitacion> piso = new ArrayList<Habitacion>();
 					BufferedReader br = new BufferedReader(new FileReader(archivo));
 					String line = br.readLine();
 					br.close();
@@ -80,28 +80,26 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 						h.setLado(Integer.parseInt(st.nextToken()));
 						h.generarBaldosas();
 						piso.add(h);
-						String puntos = st.nextToken();
-						StringTokenizer to = new StringTokenizer(puntos, "&");
+						StringTokenizer to = new StringTokenizer(st.nextToken(), "&");
 						while (to.hasMoreTokens()) {
 							h.obtenerBaldosa(Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()))
 									.cambiarPasar();
 						}
-						/*
-						 * String trayectorias = st.nextToken(); to = new
-						 * StringTokenizer(trayectorias, "Ç"); while
-						 * (to.hasMoreTokens()) { Trayectoria t = new
-						 * Trayectoria(null); dibujo.getTrayectorias().add(t);
-						 * h.obtenerBaldosa(Integer.parseInt(to.nextToken()),
-						 * Integer.parseInt(to.nextToken())) .cambiarPasar(); }
-						 */
+						to = new StringTokenizer(st.nextToken(), "%");
+						while (to.hasMoreTokens()) {
+							Trayectoria t = new Trayectoria(h);
+							StringTokenizer tok = new StringTokenizer(to.nextToken(), "Ç");
+							while (tok.hasMoreTokens()) {
+								t.agregarBaldosa(Integer.parseInt(tok.nextToken()), Integer.parseInt(tok.nextToken()));
+							}
+							dibujo.getTrayectorias().add(t);
+						}
 					}
 					dibujo.setPiso(piso);
-					dibujo.repaint();
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(this, "Archivo no válido", "Error", JOptionPane.ERROR_MESSAGE);
 					dibujo.setEscala(escalaBackup);
 					dibujo.setPiso(pisoBackup);
-					dibujo.repaint();
 				}
 			}
 		} else if (origen == "Guardar") {
@@ -114,21 +112,24 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					export += area.getX() + "|" + area.getY() + "|" + area.getLargo() + "|" + area.getAlto() + "|"
 							+ area.getLado() + "|";
 					List<Point> noPasar = area.getNoPasar();
-					ListIterator<Point> t = noPasar.listIterator();
-					while (t.hasNext()) {
-						Point p = t.next();
+					ListIterator<Point> it = noPasar.listIterator();
+					while (it.hasNext()) {
+						Point p = it.next();
 						export += (int) p.getX() + "&" + (int) p.getY() + "&";
 					}
-					/*
-					 * export += "|"; ListIterator<Trayectoria> it =
-					 * dibujo.getTrayectorias().listIterator(); while
-					 * (it.hasNext()) { ListIterator<Baldosa> ite =
-					 * it.next().getCamino().listIterator(); while
-					 * (ite.hasNext()) { Baldosa b = ite.next(); export +=
-					 * b.getX() + "Ç" + b.getY() + "Ç" + b.getLargo() + "Ç" +
-					 * b.getAlto() + "Ç" + b.getFila() + "Ç" + b.getColumna() +
-					 * "Ç"; } }
-					 */
+					export += "|";
+					ListIterator<Trayectoria> ite = dibujo.getTrayectorias().listIterator();
+					while (ite.hasNext()) {
+						Trayectoria t = ite.next();
+						if (t.getHabitacion() == area) {
+							ListIterator<Point> iter = t.getCamino().listIterator();
+							while (iter.hasNext()) {
+								Point p = iter.next();
+								export += (int) p.getX() + "Ç" + (int) p.getY() + "Ç";
+							}
+							export += "%";
+						}
+					}
 					export = export.substring(0, export.length() - 1);
 					export += "|";
 				}
@@ -137,7 +138,6 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 				} catch (IOException ex) {
 					JOptionPane.showMessageDialog(this, "Acceso denegado", "Error", JOptionPane.ERROR_MESSAGE);
 				}
-
 			}
 		} else if (origen == "Exportar") {
 			String archivo = Archivo.guardar(".jpg");
@@ -153,23 +153,21 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 			}
 		} else if (origen == "Cambiar escala") {
 			dibujo.setEscala(JOptionPane.showInputDialog("Introduzca la escala nueva"));
-			dibujo.repaint();
 		} else {
 			try {
 				dibujo.setOrientacion(Integer.parseInt(JOptionPane.showInputDialog("Introduzca la nueva orientación")));
-				dibujo.repaint();
 			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(this, "La próxima elegí bien la orientación, pelotudo.", "Error",
-						JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "Orientación inválida.", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
+		dibujo.repaint();
 	}
 
 	public void itemStateChanged(ItemEvent e) {
 	}
 
 	public FrameDemo() {
-		setTitle("SACALAMANODAICARAJO");
+		// setTitle("SACALAMANODAICARAJO");
 		setJMenuBar(this.createMenuBar());
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

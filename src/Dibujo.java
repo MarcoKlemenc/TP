@@ -32,13 +32,6 @@ class Dibujo extends JComponent {
 	private boolean shift, ctrl;
 	private String escala = "5m";
 
-	private void ajustarOrientacion() {
-		orientacion += 90;
-		if (orientacion >= 360) {
-			orientacion -= 360;
-		}
-	}
-
 	private List<Habitacion> contiene(MouseEvent e) {
 		List<Habitacion> l = new ArrayList<Habitacion>();
 		for (Habitacion h : piso) {
@@ -116,10 +109,14 @@ class Dibujo extends JComponent {
 						} else {
 							// mejorar para que borre más de una, si se cruzan?
 							for (Trayectoria t : trayectorias) {
-								if (t.getCamino().contains(b)) {
-									trayectorias.remove(t);
-									return;
+								for (Habitacion h : piso) {
+									if (t.getCamino().contains(b.getCoordenadas()) && t.getHabitacion() == h
+											&& h.contiene(e.getX(), e.getY())) {
+										trayectorias.remove(t);
+										return;
+									}
 								}
+
 							}
 							orig = b;
 						}
@@ -136,7 +133,6 @@ class Dibujo extends JComponent {
 
 			public void mousePressed(MouseEvent e) {
 				List<Habitacion> l = contiene(e);
-				List<Puerta> puertasBorrar = new ArrayList<Puerta>();
 				if (SwingUtilities.isLeftMouseButton(e)) {
 					if (l.size() == 1) {
 						actual = l.get(0);
@@ -147,19 +143,28 @@ class Dibujo extends JComponent {
 					}
 				} else if (SwingUtilities.isRightMouseButton(e)) {
 					if (l.size() == 1) {
+						Habitacion h = l.get(0);
+						List<Puerta> lp = new ArrayList<Puerta>();
 						for (Puerta p : puertas) {
-							if (p.getH1() == l.get(0) || p.getH2() == l.get(0)) {
-								puertasBorrar.add(p);
+							if (p.getH1() == h || p.getH2() == h) {
+								lp.add(p);
 							}
 						}
 						for (Set<Habitacion> s : adyacencias.values()) {
-							s.remove(l.get(0));
+							s.remove(h);
 						}
-						adyacencias.remove(l.get(0));
-						piso.remove(l.get(0));
-						puertas.removeAll(puertasBorrar);
+						List<Trayectoria> lt = new ArrayList<Trayectoria>();
+						for (Trayectoria t : trayectorias) {
+							if (t.getHabitacion() == h) {
+								lt.add(t);
+							}
+						}
+						trayectorias.removeAll(lt);
+						adyacencias.remove(h);
+						piso.remove(h);
+						puertas.removeAll(lp);
 					}
-				} else if (SwingUtilities.isMiddleMouseButton(e)){
+				} else if (SwingUtilities.isMiddleMouseButton(e)) {
 					if (l.size() == 1) {
 						actual = l.get(0);
 						contieneB(e).cambiarPasar();
@@ -203,7 +208,7 @@ class Dibujo extends JComponent {
 						List<Habitacion> l = cruza(actual);
 						if (shift && !ctrl) {
 							Puerta p = contieneP(e);
-							if (p != null){
+							if (p != null) {
 								System.out.println("A");
 								p.setAlto(e.getY() - p.getY());
 								repaint();
@@ -300,11 +305,11 @@ class Dibujo extends JComponent {
 		int orientacionVieja = orientacion;
 		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		g2.drawString(String.valueOf(orientacion), getWidth() / 2, 15);
-		ajustarOrientacion();
+		orientacion += (orientacion >= 270) ? -270 : 90;
 		g2.drawString(String.valueOf(orientacion), getWidth() - 20, getHeight() / 2 - 5);
-		ajustarOrientacion();
+		orientacion += (orientacion >= 270) ? -270 : 90;
 		g2.drawString(String.valueOf(orientacion), getWidth() / 2, getHeight() - 5);
-		ajustarOrientacion();
+		orientacion += (orientacion >= 270) ? -270 : 90;
 		g2.drawString(String.valueOf(orientacion), 0, getHeight() / 2 - 5);
 		orientacion = orientacionVieja;
 		g2.setPaint(Color.WHITE);
@@ -316,9 +321,9 @@ class Dibujo extends JComponent {
 			}
 		}
 		for (Habitacion h : piso) {
+			g2.setPaint(new Color(160, 160, 160));
 			for (Baldosa b : h.getBaldosas()) {
 				Rectangle2D r = b.getForma();
-				g2.setPaint(new Color(160, 160, 160));
 				g2.draw(r);
 				if (!b.isPasar()) {
 					g2.fill(r);
@@ -329,7 +334,8 @@ class Dibujo extends JComponent {
 			g2.setPaint(Color.CYAN);
 			for (Trayectoria t : trayectorias) {
 				if (t.getHabitacion() == h) {
-					for (Baldosa b : t.getCamino()) {
+					for (Point p : t.getCamino()) {
+						Baldosa b = h.obtenerBaldosa((int) p.getX(), (int) p.getY());
 						g2.fillRect(b.getX() + 1, b.getY() + 1, b.getLargo() - 1, b.getAlto() - 1);
 					}
 				}

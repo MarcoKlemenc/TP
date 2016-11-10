@@ -1,21 +1,26 @@
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Trayectoria {
 
-	private List<Baldosa> camino;
+	private List<Point> camino;
 	private Habitacion habitacion;
 
 	public Trayectoria(Habitacion habitacion) {
-		this.camino = new ArrayList<Baldosa>();
+		this.camino = new ArrayList<Point>();
 		this.habitacion = habitacion;
 	}
 
-	public void agregarBaldosa(Baldosa baldosa) {
-		this.camino.add(baldosa);
+	public void agregarBaldosa(Point p) {
+		this.camino.add(p);
 	}
 
-	public List<Baldosa> getCamino() {
+	public void agregarBaldosa(int f, int c) {
+		this.camino.add(new Point(f, c));
+	}
+
+	public List<Point> getCamino() {
 		return camino;
 	}
 

@@ -19,7 +19,7 @@ public class Habitacion extends Superficie {
 		if (baldosas != null) {
 			for (Baldosa b : baldosas) {
 				if (!b.isPasar()) {
-					noPasar.add(new Point(b.getFila(), b.getColumna()));
+					noPasar.add(b.getCoordenadas());
 				}
 			}
 		}
@@ -49,7 +49,7 @@ public class Habitacion extends Superficie {
 			for (int j = y; j < y + alto; j += lado) {
 				Baldosa b = new Baldosa(i, j, Math.min(x + largo - i, lado), Math.min(y + alto - j, lado), fila,
 						columna);
-				if (noPasar.contains(new Point(b.getFila(), b.getColumna()))) {
+				if (noPasar.contains(b.getCoordenadas())) {
 					b.cambiarPasar();
 				}
 				baldosas.add(b);
@@ -73,7 +73,7 @@ public class Habitacion extends Superficie {
 		while (filaA != filaB || columnaA != columnaB) {
 			Baldosa b = obtenerBaldosa(filaA, columnaA);
 			if (b.isPasar()) {
-				t.agregarBaldosa(b);
+				t.agregarBaldosa(b.getCoordenadas());
 				if (Math.abs(filaA - filaB) > Math.abs(columnaA - columnaB)) {
 					filaA -= Math.signum(filaA - filaB);
 				} else if (Math.abs(filaA - filaB) < Math.abs(columnaA - columnaB)) {
@@ -86,13 +86,13 @@ public class Habitacion extends Superficie {
 				if (obtenerBaldosa(filaA, columnaA - 1).isPasar()) {
 					columnaA--;
 					while (!obtenerBaldosa(filaA, columnaA + 1).isPasar()) {
-						t.agregarBaldosa(obtenerBaldosa(filaA, columnaA));
+						t.agregarBaldosa(filaA, columnaA);
 						filaA--;
 					}
 				} else if (obtenerBaldosa(filaA - 1, columnaA).isPasar()) {
 					filaA--;
 					while (!obtenerBaldosa(filaA + 1, columnaA).isPasar()) {
-						t.agregarBaldosa(obtenerBaldosa(filaA, columnaA));
+						t.agregarBaldosa(filaA, columnaA);
 						columnaA++;
 					}
 				} else {
@@ -109,7 +109,7 @@ public class Habitacion extends Superficie {
 
 			}
 		}
-		t.agregarBaldosa(obtenerBaldosa(filaA, columnaA));
+		t.agregarBaldosa(filaA, columnaA);
 		return t;
 	}
 

@@ -1,3 +1,5 @@
+import java.awt.Point;
+
 public class Baldosa extends Superficie {
 
 	private int fila, columna;
@@ -8,6 +10,10 @@ public class Baldosa extends Superficie {
 		super(x, y, largo, alto);
 		this.fila = fila;
 		this.columna = columna;
+	}
+
+	public Point getCoordenadas() {
+		return new Point(getFila(), getColumna());
 	}
 
 	public boolean isPasar() {
