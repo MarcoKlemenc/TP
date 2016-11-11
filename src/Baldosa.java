@@ -6,7 +6,7 @@ public class Baldosa extends Superficie {
 	private boolean pasar = true;
 	private boolean conecta = false;
 
-	public Baldosa(int x, int y, int largo, int alto, int fila, int columna) {
+	public Baldosa(double x, double y, double largo, double alto, int fila, int columna) {
 		super(x, y, largo, alto);
 		this.fila = fila;
 		this.columna = columna;

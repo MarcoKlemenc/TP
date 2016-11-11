@@ -92,18 +92,23 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 						h.generarBaldosas();
 						piso.add(h);
 						StringTokenizer to = new StringTokenizer(st.nextToken(), "&");
-						while (to.hasMoreTokens()) {
-							h.obtenerBaldosa(Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()))
-									.cambiarPasar();
+						if (to.countTokens() > 1) {
+							while (to.hasMoreTokens()) {
+								h.obtenerBaldosa(Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()))
+										.cambiarPasar();
+							}
 						}
 						to = new StringTokenizer(st.nextToken(), "%");
 						while (to.hasMoreTokens()) {
-							Trayectoria t = new Trayectoria(h);
 							StringTokenizer tok = new StringTokenizer(to.nextToken(), "Ç");
-							while (tok.hasMoreTokens()) {
-								t.agregarBaldosa(Integer.parseInt(tok.nextToken()), Integer.parseInt(tok.nextToken()));
+							if (tok.countTokens() > 1) {
+								Trayectoria t = new Trayectoria(h);
+								while (tok.hasMoreTokens()) {
+									t.agregarBaldosa(Integer.parseInt(tok.nextToken()),
+											Integer.parseInt(tok.nextToken()));
+								}
+								dibujo.getTrayectorias().add(t);
 							}
-							dibujo.getTrayectorias().add(t);
 						}
 					}
 					dibujo.setPiso(piso);
@@ -122,26 +127,32 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					Habitacion area = i.next();
 					export += area.getX() + "|" + area.getY() + "|" + area.getLargo() + "|" + area.getAlto() + "|"
 							+ area.getLado() + "|";
-					List<Point> noPasar = area.getNoPasar();
-					ListIterator<Point> it = noPasar.listIterator();
+					ListIterator<Point> it = area.getNoPasar().listIterator();
+					if (!it.hasNext()) {
+						export += "!";
+					}
 					while (it.hasNext()) {
 						Point p = it.next();
 						export += (int) p.getX() + "&" + (int) p.getY() + "&";
 					}
 					export += "|";
 					ListIterator<Trayectoria> ite = dibujo.getTrayectorias().listIterator();
-					while (ite.hasNext()) {
-						Trayectoria t = ite.next();
-						if (t.getHabitacion() == area) {
-							ListIterator<Point> iter = t.getCamino().listIterator();
-							while (iter.hasNext()) {
-								Point p = iter.next();
-								export += (int) p.getX() + "Ç" + (int) p.getY() + "Ç";
+					if (!ite.hasNext()) {
+						export += "!";
+					} else {
+						while (ite.hasNext()) {
+							Trayectoria t = ite.next();
+							if (t.getHabitacion() == area) {
+								ListIterator<Point> iter = t.getCamino().listIterator();
+								while (iter.hasNext()) {
+									Point p = iter.next();
+									export += (int) p.getX() + "Ç" + (int) p.getY() + "Ç";
+								}
+								export += "%";
 							}
-							export += "%";
 						}
+						export = export.substring(0, export.length() - 1);
 					}
-					export = export.substring(0, export.length() - 1);
 					export += "|";
 				}
 				try {

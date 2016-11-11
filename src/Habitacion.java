@@ -6,11 +6,11 @@ import java.util.List;
 
 public class Habitacion extends Superficie {
 
-	private int lado;
+	private double lado;
 	private List<Baldosa> baldosas;
 	private List<Obstaculo> obstaculos = new ArrayList<Obstaculo>();
 
-	public Habitacion(int x, int y, int largo, int alto) {
+	public Habitacion(double x, double y, double largo, double alto) {
 		super(x, y, largo, alto);
 	}
 
@@ -37,16 +37,16 @@ public class Habitacion extends Superficie {
 	}
 
 	Rectangle2D getColision() {
-		return new Rectangle2D.Float(x, y, largo + 1, alto + 1);
+		return new Rectangle2D.Double(x, y, largo + 1, alto + 1);
 	}
 
 	public void generarBaldosas() {
 		List<Point> noPasar = getNoPasar();
 		this.baldosas = new ArrayList<Baldosa>();
 		int columna = 1;
-		for (int i = x; i < x + largo; i += lado) {
+		for (double i = x; i < x + largo; i += lado) {
 			int fila = 1;
-			for (int j = y; j < y + alto; j += lado) {
+			for (double j = y; j < y + alto; j += lado) {
 				Baldosa b = new Baldosa(i, j, Math.min(x + largo - i, lado), Math.min(y + alto - j, lado), fila,
 						columna);
 				if (noPasar.contains(b.getCoordenadas())) {
@@ -59,7 +59,7 @@ public class Habitacion extends Superficie {
 		}
 	}
 
-	public Baldosa obtenerBaldosa(int fila, int columna) {
+	public Baldosa obtenerBaldosa(double fila, double columna) {
 		for (Baldosa b : this.baldosas) {
 			if (b.getFila() == fila && b.getColumna() == columna) {
 				return b;
@@ -129,11 +129,11 @@ public class Habitacion extends Superficie {
 		this.obstaculos = obstaculos;
 	}
 
-	public int getLado() {
+	public double getLado() {
 		return lado;
 	}
 
-	public void setLado(int lado) {
+	public void setLado(double lado) {
 		this.lado = lado;
 	}
 

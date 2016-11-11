@@ -3,53 +3,56 @@ import java.awt.geom.Rectangle2D;
 
 public class Superficie {
 
-	protected int x, y, largo, alto;
+	protected double x, y, largo, alto;
 
-	public Superficie(int x, int y, int largo, int alto) {
+	public Superficie(double x, double y, double largo, double alto) {
 		this.x = x;
 		this.y = y;
 		this.largo = largo;
 		this.alto = alto;
 	}
 
-	public boolean contiene(int x, int y) {
+	public boolean contiene(double x, double y) {
 		return x >= this.x && x <= this.x + largo && y >= this.y && y <= this.y + alto;
 	}
 
 	public Rectangle2D getForma() {
-		return new Rectangle2D.Float(x, y, largo, alto);
+		return new Rectangle2D.Double(x, y, largo, alto);
 	}
 
-	public int getX() {
+	public Rectangle2D getInterior() {
+		return new Rectangle2D.Double(x + 1, y + 1, largo - 1, alto - 1);
+	}
+
+	public double getX() {
 		return x;
 	}
 
-	public void setX(int x) {
+	public void setX(double x) {
 		this.x = x;
 	}
 
-	public int getY() {
+	public double getY() {
 		return y;
 	}
 
-	public void setY(int y) {
+	public void setY(double y) {
 		this.y = y;
 	}
 
-	public int getLargo() {
+	public double getLargo() {
 		return largo;
 	}
 
-	public void setLargo(int largo) {
+	public void setLargo(double largo) {
 		this.largo = largo;
 	}
 
-	public int getAlto() {
+	public double getAlto() {
 		return alto;
 	}
 
-	public void setAlto(int alto) {
+	public void setAlto(double alto) {
 		this.alto = alto;
 	}
 }
-

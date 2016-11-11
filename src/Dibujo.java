@@ -25,9 +25,10 @@ class Dibujo extends JComponent {
 	private List<Puerta> puertas = new ArrayList<Puerta>();
 	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
 	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
-	private Point inicio, fin;
-	private int desvioX, desvioY, orientacion;
-	private Habitacion actual, temp;
+	private Point inicio, fin, trayP;
+	private double desvioX, desvioY;
+	private int orientacion;
+	private Habitacion actual, temp, trayH;
 	private Baldosa orig, dest;
 	private boolean shift, ctrl;
 	private String escala = "5m";
@@ -106,6 +107,8 @@ class Dibujo extends JComponent {
 							trayectorias.add(actual.generarTrayectoria(orig.getFila(), orig.getColumna(),
 									dest.getFila(), dest.getColumna()));
 							orig = null;
+							trayP = null;
+							trayH = null;
 						} else {
 							// mejorar para que borre más de una, si se cruzan?
 							for (Trayectoria t : trayectorias) {
@@ -116,9 +119,10 @@ class Dibujo extends JComponent {
 										return;
 									}
 								}
-
 							}
 							orig = b;
+							trayP = new Point(b.getFila(), b.getColumna());
+							trayH = actual;
 						}
 						dest = null;
 					} else if (l.size() == 2 && p == null) {
@@ -176,8 +180,7 @@ class Dibujo extends JComponent {
 			public void mouseReleased(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e) && actual == null && temp != null && temp.getLargo() >= 2
 						&& temp.getAlto() >= 2) {
-					Habitacion h = new Habitacion((int) temp.getX(), (int) temp.getY(), (int) temp.getLargo(),
-							(int) temp.getAlto());
+					Habitacion h = new Habitacion(temp.getX(), temp.getY(), temp.getLargo(), temp.getAlto());
 					if (cruza(h).size() == 0) {
 						piso.add(h);
 						h.setLado(Math.min(h.getAlto(), h.getLargo()) / 4 + 1);
@@ -208,8 +211,8 @@ class Dibujo extends JComponent {
 								return;
 							}
 						}
-						int x = e.getX() - actual.getX();
-						int y = e.getY() - actual.getY();
+						double x = e.getX() - actual.getX();
+						double y = e.getY() - actual.getY();
 						List<Habitacion> l = cruza(actual);
 						if (shift && !ctrl) {
 							if (actual.getLargo() <= 2 || actual.getAlto() <= 2) {
@@ -318,7 +321,10 @@ class Dibujo extends JComponent {
 				g2.draw(new Rectangle2D.Float(i, j, 100, 100));
 			}
 		}
+		Color[] colores = { Color.CYAN, Color.BLUE, Color.GREEN, Color.ORANGE, Color.RED, Color.MAGENTA, Color.PINK,
+				Color.YELLOW };
 		for (Habitacion h : piso) {
+			int c = -1;
 			g2.setPaint(new Color(160, 160, 160));
 			for (Baldosa b : h.getBaldosas()) {
 				Rectangle2D r = b.getForma();
@@ -329,19 +335,23 @@ class Dibujo extends JComponent {
 			}
 			g2.setPaint(Color.BLACK);
 			g2.draw(h.getForma());
-			g2.setPaint(Color.CYAN);
 			for (Trayectoria t : trayectorias) {
 				if (t.getHabitacion() == h) {
+					g2.setPaint(colores[c += (c == 7) ? -7 : 1]);
 					for (Point p : t.getCamino()) {
-						Baldosa b = h.obtenerBaldosa((int) p.getX(), (int) p.getY());
-						g2.fillRect(b.getX() + 1, b.getY() + 1, b.getLargo() - 1, b.getAlto() - 1);
+						g2.fill(h.obtenerBaldosa(p.getX(), p.getY()).getInterior());
 					}
+
 				}
 			}
 		}
-		if (orig != null) {
-			g2.setPaint(new Color(0, 255, 255, 64));
-			g2.fillRect(orig.getX() + 1, orig.getY() + 1, orig.getLargo() - 1, orig.getAlto() - 1);
+		if (trayP != null) {
+			g2.setPaint(new Color(192, 192, 192, 128));
+			for (Habitacion h : piso) {
+				if (h == trayH) {
+					g2.fill(h.obtenerBaldosa(trayP.getX(), trayP.getY()).getForma());
+				}
+			}
 		}
 		for (Puerta p : puertas) {
 			g2.setPaint(Color.BLACK);
