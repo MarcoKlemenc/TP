@@ -174,7 +174,7 @@ class Dibujo extends JComponent {
 			}
 
 			public void mouseReleased(MouseEvent e) {
-				if (SwingUtilities.isLeftMouseButton(e) && actual == null && temp.getLargo() >= 2
+				if (SwingUtilities.isLeftMouseButton(e) && actual == null && temp != null && temp.getLargo() >= 2
 						&& temp.getAlto() >= 2) {
 					Habitacion h = new Habitacion((int) temp.getX(), (int) temp.getY(), (int) temp.getLargo(),
 							(int) temp.getAlto());
@@ -188,6 +188,7 @@ class Dibujo extends JComponent {
 				inicio = null;
 				fin = null;
 				actual = null;
+				temp = null;
 				repaint();
 			}
 		});
@@ -367,6 +368,14 @@ class Dibujo extends JComponent {
 		this.piso = piso;
 	}
 
+	public List<Puerta> getPuertas() {
+		return puertas;
+	}
+
+	public void setPuertas(List<Puerta> puertas) {
+		this.puertas = puertas;
+	}
+
 	public List<Trayectoria> getTrayectorias() {
 		return trayectorias;
 	}
@@ -380,7 +389,7 @@ class Dibujo extends JComponent {
 	}
 
 	public void setEscala(String escala) {
-		this.escala = escala;
+		this.escala = escala != null ? escala : this.escala;
 	}
 
 	public Integer getOrientacion() {

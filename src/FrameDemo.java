@@ -50,17 +50,28 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 		menuBar.add(menuArchivo);
 		menuBar.add(menuObstaculo);
 		menuBar.add(menuTrayectoria);
-		menuArchivo.add(agregarItem("Abrir", KeyEvent.VK_1));
-		menuArchivo.add(agregarItem("Guardar", KeyEvent.VK_2));
-		menuArchivo.add(agregarItem("Exportar", KeyEvent.VK_3));
-		menuArchivo.add(agregarItem("Cambiar escala", KeyEvent.VK_4));
-		menuArchivo.add(agregarItem("Cambiar orientación", KeyEvent.VK_5));
+		menuArchivo.add(agregarItem("Nuevo", KeyEvent.VK_1));
+		menuArchivo.add(agregarItem("Abrir", KeyEvent.VK_2));
+		menuArchivo.add(agregarItem("Guardar", KeyEvent.VK_3));
+		menuArchivo.add(agregarItem("Exportar", KeyEvent.VK_4));
+		menuArchivo.add(agregarItem("Cambiar escala", KeyEvent.VK_5));
+		menuArchivo.add(agregarItem("Cambiar orientación", KeyEvent.VK_6));
 		return menuBar;
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		String origen = ((JMenuItem) e.getSource()).getText();
-		if (origen == "Abrir") {
+		if (origen == "Nuevo") {
+			// faltan cosas
+			try {
+				dibujo.setOrientacion(0);
+			} catch (Exception e1) {
+			}
+			dibujo.setEscala("5m");
+			dibujo.setPiso(new ArrayList<Habitacion>());
+			dibujo.setPuertas(new ArrayList<Puerta>());
+			dibujo.setTrayectorias(new ArrayList<Trayectoria>());
+		} else if (origen == "Abrir") {
 			String archivo = Archivo.abrir(".txt");
 			if (archivo != null) {
 				String escalaBackup = dibujo.getEscala();
@@ -154,10 +165,14 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 		} else if (origen == "Cambiar escala") {
 			dibujo.setEscala(JOptionPane.showInputDialog("Introduzca la escala nueva"));
 		} else {
+			String texto = null;
 			try {
-				dibujo.setOrientacion(Integer.parseInt(JOptionPane.showInputDialog("Introduzca la nueva orientación")));
+				texto = JOptionPane.showInputDialog("Introduzca la nueva orientación");
+				dibujo.setOrientacion(Integer.parseInt(texto));
 			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(this, "Orientación inválida.", "Error", JOptionPane.ERROR_MESSAGE);
+				if (texto != null) {
+					JOptionPane.showMessageDialog(this, "Orientación inválida", "Error", JOptionPane.ERROR_MESSAGE);
+				}
 			}
 		}
 		dibujo.repaint();
