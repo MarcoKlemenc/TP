@@ -1,35 +1,33 @@
 
 public class Nodo {
-	
-    private final int fila;
-    private final int columna;
-    private int distance = Integer.MAX_VALUE;
 
-    public Nodo (int fila, int columna) {
-        this.fila = fila;
-        this.columna = columna;
-    }
+	private final int v;
+	private int distance = Integer.MAX_VALUE;
 
-    public int getDistance() {
-        return distance;
-    }
-
-    public void setDistance(int distance) {
-        this.distance = distance;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        Nodo node = (Nodo) o;
-        return node.getFila() == fila && node.getColumna() == columna;
-    }
-
-	public int getFila() {
-		return fila;
+	public Nodo(int v) {
+		this.v = v;
 	}
 
-	public int getColumna() {
-		return columna;
+	public int getValue() {
+		return v;
 	}
-    
+
+	public int getDistance() {
+		return distance;
+	}
+
+	public void setDistance(int distance) {
+		this.distance = distance;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		Nodo node = (Nodo) o;
+		return node.getValue() == v;
+	}
+
+	@Override
+	public int hashCode() {
+		return v;
+	}
 }

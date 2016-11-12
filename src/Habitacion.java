@@ -8,7 +8,6 @@ public class Habitacion extends Superficie {
 
 	private double lado;
 	private List<Baldosa> baldosas;
-	private List<Obstaculo> obstaculos = new ArrayList<Obstaculo>();
 
 	public Habitacion(double x, double y, double largo, double alto) {
 		super(x, y, largo, alto);
@@ -69,11 +68,11 @@ public class Habitacion extends Superficie {
 	}
 
 	public Trayectoria generarTrayectoria(int filaA, int columnaA, int filaB, int columnaB) {
-		Trayectoria t = new Trayectoria(this);
+		Trayectoria t = new Trayectoria();
 		while (filaA != filaB || columnaA != columnaB) {
 			Baldosa b = obtenerBaldosa(filaA, columnaA);
 			if (b.isPasar()) {
-				t.agregarBaldosa(b.getCoordenadas());
+				t.agregarBaldosa(this, b.getCoordenadas());
 				if (Math.abs(filaA - filaB) > Math.abs(columnaA - columnaB)) {
 					filaA -= Math.signum(filaA - filaB);
 				} else if (Math.abs(filaA - filaB) < Math.abs(columnaA - columnaB)) {
@@ -86,13 +85,13 @@ public class Habitacion extends Superficie {
 				if (obtenerBaldosa(filaA, columnaA - 1).isPasar()) {
 					columnaA--;
 					while (!obtenerBaldosa(filaA, columnaA + 1).isPasar()) {
-						t.agregarBaldosa(filaA, columnaA);
+						t.agregarBaldosa(this, filaA, columnaA);
 						filaA--;
 					}
 				} else if (obtenerBaldosa(filaA - 1, columnaA).isPasar()) {
 					filaA--;
 					while (!obtenerBaldosa(filaA + 1, columnaA).isPasar()) {
-						t.agregarBaldosa(filaA, columnaA);
+						t.agregarBaldosa(this, filaA, columnaA);
 						columnaA++;
 					}
 				} else {
@@ -109,7 +108,7 @@ public class Habitacion extends Superficie {
 
 			}
 		}
-		t.agregarBaldosa(filaA, columnaA);
+		t.agregarBaldosa(this, filaA, columnaA);
 		return t;
 	}
 
@@ -119,14 +118,6 @@ public class Habitacion extends Superficie {
 
 	public void setBaldosas(List<Baldosa> baldosas) {
 		this.baldosas = baldosas;
-	}
-
-	public List<Obstaculo> getObstaculos() {
-		return obstaculos;
-	}
-
-	public void setObstaculos(List<Obstaculo> obstaculos) {
-		this.obstaculos = obstaculos;
 	}
 
 	public double getLado() {

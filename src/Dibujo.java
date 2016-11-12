@@ -24,7 +24,9 @@ class Dibujo extends JComponent {
 	private List<Habitacion> piso = new ArrayList<Habitacion>();
 	private List<Puerta> puertas = new ArrayList<Puerta>();
 	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
-	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
+	// private Map<Habitacion, Set<Habitacion>> adyacencias = new
+	// HashMap<Habitacion, Set<Habitacion>>();
+	// private Grafo grafo = new Grafo();
 	private Point inicio, fin, trayP;
 	private double desvioX, desvioY;
 	private int orientacion;
@@ -113,7 +115,7 @@ class Dibujo extends JComponent {
 							// mejorar para que borre más de una, si se cruzan?
 							for (Trayectoria t : trayectorias) {
 								for (Habitacion h : piso) {
-									if (t.getCamino().contains(b.getCoordenadas()) && t.getHabitacion() == h
+									if (t.getCamino().contains(b.getCoordenadas()) && t.getHabitaciones().contains(h)
 											&& h.contiene(e.getX(), e.getY())) {
 										trayectorias.remove(t);
 										return;
@@ -129,8 +131,10 @@ class Dibujo extends JComponent {
 						Habitacion h1 = l.get(0);
 						Habitacion h2 = l.get(1);
 						puertas.add(new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2, true));
-						adyacencias.get(h1).add(h2);
-						adyacencias.get(h2).add(h1);
+						/*
+						 * adyacencias.get(h1).add(h2);
+						 * adyacencias.get(h2).add(h1);
+						 */
 					}
 				}
 			}
@@ -154,17 +158,18 @@ class Dibujo extends JComponent {
 								lp.add(p);
 							}
 						}
-						for (Set<Habitacion> s : adyacencias.values()) {
-							s.remove(h);
-						}
+						/*
+						 * for (Set<Habitacion> s : adyacencias.values()) {
+						 * s.remove(h); }
+						 */
 						List<Trayectoria> lt = new ArrayList<Trayectoria>();
 						for (Trayectoria t : trayectorias) {
-							if (t.getHabitacion() == h) {
+							if (t.getHabitaciones().contains(h)) {
 								lt.add(t);
 							}
 						}
 						trayectorias.removeAll(lt);
-						adyacencias.remove(h);
+						// adyacencias.remove(h);
 						piso.remove(h);
 						puertas.removeAll(lp);
 					}
@@ -185,7 +190,7 @@ class Dibujo extends JComponent {
 						piso.add(h);
 						h.setLado(Math.min(h.getAlto(), h.getLargo()) / 4 + 1);
 						h.generarBaldosas();
-						adyacencias.put(h, new HashSet<Habitacion>());
+						// adyacencias.put(h, new HashSet<Habitacion>());
 					}
 				}
 				inicio = null;
@@ -266,7 +271,7 @@ class Dibujo extends JComponent {
 												&& actual.getY() >= h.getY() && actual.getY() <= h.getY() + h.getAlto()
 												&& actual.getX() + actual.getLargo() - h.getX() >= actual.getY()
 														+ actual.getAlto() - h.getY()) {
-											actual.setX(h.getX() + h.getLargo());
+											actual.setX(x);
 											chocoX = true;
 										} else {
 											actual.setX(x);
@@ -324,7 +329,7 @@ class Dibujo extends JComponent {
 		Color[] colores = { Color.CYAN, Color.BLUE, Color.GREEN, Color.ORANGE, Color.RED, Color.MAGENTA, Color.PINK,
 				Color.YELLOW };
 		for (Habitacion h : piso) {
-			int c = -1;
+			int col = -1;
 			g2.setPaint(new Color(160, 160, 160));
 			for (Baldosa b : h.getBaldosas()) {
 				Rectangle2D r = b.getForma();
@@ -336,9 +341,10 @@ class Dibujo extends JComponent {
 			g2.setPaint(Color.BLACK);
 			g2.draw(h.getForma());
 			for (Trayectoria t : trayectorias) {
-				if (t.getHabitacion() == h) {
-					g2.setPaint(colores[c += (c == 7) ? -7 : 1]);
-					for (Point p : t.getCamino()) {
+				if (t.getHabitaciones().contains(h)) {
+					g2.setPaint(colores[col += (col == 7) ? -7 : 1]);
+					for (Camino c : t.getCamino()) {
+						Point p = c.getPunto();
 						g2.fill(h.obtenerBaldosa(p.getX(), p.getY()).getInterior());
 					}
 

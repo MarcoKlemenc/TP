@@ -1,31 +1,37 @@
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Trayectoria {
 
-	private List<Point> camino;
-	private Habitacion habitacion;
+	private List<Camino> camino = new ArrayList<Camino>();
+	private Set<Habitacion> habitaciones = new HashSet<Habitacion>();
 
-	public Trayectoria(Habitacion habitacion) {
-		this.camino = new ArrayList<Point>();
-		this.habitacion = habitacion;
+	public void agregarBaldosa(Habitacion h, Point p) {
+		camino.add(new Camino(h, p));
+		habitaciones.add(h);
 	}
 
-	public void agregarBaldosa(Point p) {
-		this.camino.add(p);
+	public void agregarBaldosa(Habitacion h, int f, int c) {
+		agregarBaldosa(h, new Point(f, c));
 	}
 
-	public void agregarBaldosa(int f, int c) {
-		this.camino.add(new Point(f, c));
-	}
-
-	public List<Point> getCamino() {
+	public List<Camino> getCamino() {
 		return camino;
 	}
 
-	public Habitacion getHabitacion() {
-		return habitacion;
+	public void setCamino(List<Camino> camino) {
+		this.camino = camino;
+	}
+
+	public Set<Habitacion> getHabitaciones() {
+		return habitaciones;
+	}
+
+	public void setHabitaciones(Set<Habitacion> habitaciones) {
+		this.habitaciones = habitaciones;
 	}
 
 }

@@ -85,16 +85,16 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					dibujo.setEscala(st.nextToken());
 					dibujo.setOrientacion(Integer.parseInt(st.nextToken()));
 					while (st.hasMoreTokens()) {
-						Habitacion h = new Habitacion(Integer.parseInt(st.nextToken()),
-								Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
-								Integer.parseInt(st.nextToken()));
-						h.setLado(Integer.parseInt(st.nextToken()));
+						Habitacion h = new Habitacion(Double.parseDouble(st.nextToken()),
+								Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()),
+								Double.parseDouble(st.nextToken()));
+						h.setLado(Double.parseDouble(st.nextToken()));
 						h.generarBaldosas();
 						piso.add(h);
 						StringTokenizer to = new StringTokenizer(st.nextToken(), "&");
 						if (to.countTokens() > 1) {
 							while (to.hasMoreTokens()) {
-								h.obtenerBaldosa(Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()))
+								h.obtenerBaldosa(Double.parseDouble(to.nextToken()), Double.parseDouble(to.nextToken()))
 										.cambiarPasar();
 							}
 						}
@@ -102,9 +102,9 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 						while (to.hasMoreTokens()) {
 							StringTokenizer tok = new StringTokenizer(to.nextToken(), "Ç");
 							if (tok.countTokens() > 1) {
-								Trayectoria t = new Trayectoria(h);
+								Trayectoria t = new Trayectoria();
 								while (tok.hasMoreTokens()) {
-									t.agregarBaldosa(Integer.parseInt(tok.nextToken()),
+									t.agregarBaldosa(h, Integer.parseInt(tok.nextToken()),
 											Integer.parseInt(tok.nextToken()));
 								}
 								dibujo.getTrayectorias().add(t);
@@ -116,6 +116,7 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					JOptionPane.showMessageDialog(this, "Archivo no válido", "Error", JOptionPane.ERROR_MESSAGE);
 					dibujo.setEscala(escalaBackup);
 					dibujo.setPiso(pisoBackup);
+					ex.printStackTrace();
 				}
 			}
 		} else if (origen == "Guardar") {
@@ -142,10 +143,10 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					} else {
 						while (ite.hasNext()) {
 							Trayectoria t = ite.next();
-							if (t.getHabitacion() == area) {
-								ListIterator<Point> iter = t.getCamino().listIterator();
+							if (t.getHabitaciones().contains(area)) {
+								ListIterator<Camino> iter = t.getCamino().listIterator();
 								while (iter.hasNext()) {
-									Point p = iter.next();
+									Point p = iter.next().getPunto();
 									export += (int) p.getX() + "Ç" + (int) p.getY() + "Ç";
 								}
 								export += "%";
