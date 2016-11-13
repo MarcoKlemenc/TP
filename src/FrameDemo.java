@@ -140,9 +140,11 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					if (!ite.hasNext()) {
 						export += "!";
 					} else {
+						boolean trayectorias = false;
 						while (ite.hasNext()) {
 							Trayectoria t = ite.next();
 							if (t.getHabitaciones().contains(area)) {
+								trayectorias = true;
 								ListIterator<Camino> iter = t.getCamino().listIterator();
 								while (iter.hasNext()) {
 									Point p = iter.next().getPunto();
@@ -151,7 +153,10 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 								export += "%";
 							}
 						}
-						export = export.substring(0, export.length() - 1);
+						if (!trayectorias) {
+							export += "!";
+						}
+						// export = export.substring(0, export.length() - 1);
 					}
 					export += "|";
 				}
