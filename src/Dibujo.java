@@ -33,6 +33,7 @@ class Dibujo extends JComponent {
 	private Habitacion actual, temp, trayH;
 	private Baldosa orig, dest;
 	private boolean shift, ctrl;
+	private Puerta pTemp = null;
 	private String escala = "5m";
 
 	private List<Habitacion> contiene(MouseEvent e) {
@@ -115,7 +116,7 @@ class Dibujo extends JComponent {
 							// mejorar para que borre más de una, si se cruzan?
 							for (Trayectoria t : trayectorias) {
 								for (Habitacion h : piso) {
-									if (t.getCamino().contains(b.getCoordenadas()) && t.getHabitaciones().contains(h)
+									if (t.buscar(h, b.getCoordenadas()) && t.getHabitaciones().contains(h)
 											&& h.contiene(e.getX(), e.getY())) {
 										trayectorias.remove(t);
 										return;
@@ -130,7 +131,13 @@ class Dibujo extends JComponent {
 					} else if (l.size() == 2 && p == null) {
 						Habitacion h1 = l.get(0);
 						Habitacion h2 = l.get(1);
-						puertas.add(new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2, true));
+						if (h1.contiene(e.getX() - 3, e.getY() - 1) && h2.contiene(e.getX() + 3, e.getY() - 1)
+								|| h1.contiene(e.getX() + 3, e.getY() - 1) && h2.contiene(e.getX() - 3, e.getY() - 1)) {
+							puertas.add(new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2, true));
+						} else if (h1.contiene(e.getX() - 1, e.getY() - 3) && h2.contiene(e.getX() - 1, e.getY() + 3)
+								|| h1.contiene(e.getX() - 1, e.getY() + 3) && h2.contiene(e.getX() - 1, e.getY() - 3)) {
+							puertas.add(new Puerta(e.getX(), e.getY() - 3, 30, 7, h1, h2, true));
+						}
 						/*
 						 * adyacencias.get(h1).add(h2);
 						 * adyacencias.get(h2).add(h1);
@@ -201,6 +208,25 @@ class Dibujo extends JComponent {
 			}
 		});
 		this.addMouseMotionListener(new MouseMotionAdapter() {
+
+			public void mouseMoved(MouseEvent e) {
+				List<Habitacion> l = contiene(e);
+				if (l.size() == 2) {
+					Habitacion h1 = l.get(0);
+					Habitacion h2 = l.get(1);
+					if (h1.contiene(e.getX() - 3, e.getY() - 1) && h2.contiene(e.getX() + 3, e.getY() - 1)
+							|| h1.contiene(e.getX() + 3, e.getY() - 1) && h2.contiene(e.getX() - 3, e.getY() - 1)) {
+						pTemp = new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2, true);
+					} else if (h1.contiene(e.getX() - 1, e.getY() - 3) && h2.contiene(e.getX() - 1, e.getY() + 3)
+							|| h1.contiene(e.getX() - 1, e.getY() + 3) && h2.contiene(e.getX() - 1, e.getY() - 3)) {
+						pTemp = new Puerta(e.getX(), e.getY() - 3, 30, 7, h1, h2, true);
+					}
+				} else {
+					pTemp = null;
+				}
+				repaint();
+			}
+
 			public void mouseDragged(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e)) {
 					Puerta p = contieneP(e);
@@ -362,6 +388,10 @@ class Dibujo extends JComponent {
 		for (Puerta p : puertas) {
 			g2.setPaint(Color.BLACK);
 			g2.fill(p.getForma());
+		}
+		if (pTemp != null) {
+			g2.setPaint(new Color(0, 0, 0, 128));
+			g2.fill(pTemp.getForma());
 		}
 		if (inicio != null && fin != null) {
 			g2.setPaint(Color.BLACK);

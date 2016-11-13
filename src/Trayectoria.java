@@ -18,6 +18,15 @@ public class Trayectoria {
 		agregarBaldosa(h, new Point(f, c));
 	}
 
+	public boolean buscar(Habitacion h, Point p) {
+		for (Camino c : camino) {
+			if (c.getHabitacion() == h && c.getPunto().getX() == p.getX() && c.getPunto().getY() == p.getY()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public List<Camino> getCamino() {
 		return camino;
 	}

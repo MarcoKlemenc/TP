@@ -116,7 +116,6 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					JOptionPane.showMessageDialog(this, "Archivo no válido", "Error", JOptionPane.ERROR_MESSAGE);
 					dibujo.setEscala(escalaBackup);
 					dibujo.setPiso(pisoBackup);
-					ex.printStackTrace();
 				}
 			}
 		} else if (origen == "Guardar") {
