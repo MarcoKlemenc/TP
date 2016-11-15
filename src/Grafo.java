@@ -6,13 +6,13 @@ import java.util.Map;
 public class Grafo {
 
 	private final Map<Nodo, ArrayList<Arista>> map;
-	private final int numberOfVertices;
+	//private final int numberOfVertices;
 
-	Grafo(int numberOfVertices) {
-		if (numberOfVertices < 0) {
+	Grafo(/*int numberOfVertices*/) {
+		/*if (numberOfVertices < 0) {
 			throw new IllegalArgumentException("A vertex cannot be less than zero");
 		}
-		this.numberOfVertices = numberOfVertices;
+		this.numberOfVertices = numberOfVertices;*/
 		this.map = new HashMap<Nodo, ArrayList<Arista>>();
 	}
 
@@ -51,7 +51,7 @@ public class Grafo {
 		return map;
 	}
 
-	public int getNumVertices() {
+	/*public int getNumVertices() {
 		return numberOfVertices;
-	}
+	}*/
 }

@@ -8,6 +8,12 @@ public class Trayectoria {
 
 	private List<Camino> camino = new ArrayList<Camino>();
 	private Set<Habitacion> habitaciones = new HashSet<Habitacion>();
+	
+	public void anexar(Trayectoria t){
+		for (Camino c : t.getCamino()){
+			camino.add(c);
+		}
+	}
 
 	public void agregarBaldosa(Habitacion h, Point p) {
 		camino.add(new Camino(h, p));

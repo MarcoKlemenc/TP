@@ -13,6 +13,15 @@ public class Habitacion extends Superficie {
 		super(x, y, largo, alto);
 	}
 
+	public boolean contieneB(Baldosa b) {
+		for (Baldosa b1 : baldosas) {
+			if (b == b1) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public List<Point> getNoPasar() {
 		List<Point> noPasar = new ArrayList<Point>();
 		if (baldosas != null) {

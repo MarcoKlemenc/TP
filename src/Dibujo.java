@@ -12,6 +12,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,9 +25,8 @@ class Dibujo extends JComponent {
 	private List<Habitacion> piso = new ArrayList<Habitacion>();
 	private List<Puerta> puertas = new ArrayList<Puerta>();
 	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
-	// private Map<Habitacion, Set<Habitacion>> adyacencias = new
-	// HashMap<Habitacion, Set<Habitacion>>();
-	// private Grafo grafo = new Grafo();
+	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
+	private Grafo grafo = null;
 	private Point inicio, fin, trayP;
 	private double desvioX, desvioY;
 	private int orientacion;
@@ -35,6 +35,15 @@ class Dibujo extends JComponent {
 	private boolean shift, ctrl;
 	private Puerta pTemp = null;
 	private String escala = "5m";
+
+	private Habitacion baldosaDentro(Baldosa b) {
+		for (Habitacion h : piso) {
+			if (h.contieneB(b)) {
+				return h;
+			}
+		}
+		return null;
+	}
 
 	private List<Habitacion> contiene(MouseEvent e) {
 		List<Habitacion> l = new ArrayList<Habitacion>();
@@ -107,11 +116,96 @@ class Dibujo extends JComponent {
 						Baldosa b = contieneB(e);
 						if (orig != null && dest == null) {
 							dest = b;
-							trayectorias.add(actual.generarTrayectoria(orig.getFila(), orig.getColumna(),
-									dest.getFila(), dest.getColumna()));
-							orig = null;
-							trayP = null;
-							trayH = null;
+							Habitacion h1 = baldosaDentro(orig);
+							Habitacion h2 = baldosaDentro(dest);
+							if (h1 == h2) {
+								trayectorias.add(actual.generarTrayectoria(orig.getFila(), orig.getColumna(),
+										dest.getFila(), dest.getColumna()));
+								orig = null;
+								trayP = null;
+								trayH = null;
+							} else if (h1 != h2 && adyacencias.get(h1).contains(h2)) {
+								Trayectoria t = null;
+								for (Puerta pu : puertas) {
+									if (pu.getH1() == h1 && pu.getH2() == h2 || pu.getH1() == h2 && pu.getH2() == h1) {
+										for (Baldosa ba : h1.getBaldosas()) {
+											if (ba.contiene(pu.getX(), pu.getY())
+													|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+												actual = h1;
+												t = actual.generarTrayectoria(orig.getFila(), orig.getColumna(),
+														ba.getFila(), ba.getColumna());
+											}
+										}
+										for (Baldosa ba : h2.getBaldosas()) {
+											if (ba.contiene(pu.getX(), pu.getY())
+													|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+												actual = h2;
+												t.anexar(actual.generarTrayectoria(ba.getFila(), ba.getColumna(),
+														dest.getFila(), dest.getColumna()));
+												orig = null;
+												trayP = null;
+												trayH = null;
+											}
+										}
+									}
+								}
+								trayectorias.add(t);
+							} else {
+								Set<Habitacion> cerca = new HashSet<Habitacion>();
+								cerca.add(h2);
+								cerca.addAll(adyacencias.get(h2));
+								cerca.retainAll(adyacencias.get(h1));
+								Iterator<Habitacion> azar = cerca.iterator();
+								Habitacion h3 = azar.next();
+								Baldosa inicioTemp = null;
+								if (!cerca.isEmpty()) {
+									Trayectoria t = null;
+									for (Puerta pu : puertas) {
+										if (pu.getH1() == h1 && pu.getH2() == h3
+												|| pu.getH1() == h3 && pu.getH2() == h1) {
+											for (Baldosa ba : h1.getBaldosas()) {
+												if (ba.contiene(pu.getX(), pu.getY())
+														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+													actual = h1;
+													t = actual.generarTrayectoria(orig.getFila(), orig.getColumna(),
+															ba.getFila(), ba.getColumna());
+												}
+											}
+											for (Baldosa ba : h3.getBaldosas()) {
+												if (ba.contiene(pu.getX(), pu.getY())
+														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+													inicioTemp = ba;
+												}
+											}
+										}
+									}
+									for (Puerta pu : puertas) {
+										if (pu.getH1() == h2 && pu.getH2() == h3
+												|| pu.getH1() == h3 && pu.getH2() == h2) {
+											for (Baldosa ba : h3.getBaldosas()) {
+												if (ba.contiene(pu.getX(), pu.getY())
+														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+													actual = h3;
+													t.anexar(actual.generarTrayectoria(inicioTemp.getFila(),
+															inicioTemp.getColumna(), ba.getFila(), ba.getColumna()));
+												}
+											}
+											for (Baldosa ba : h2.getBaldosas()) {
+												if (ba.contiene(pu.getX(), pu.getY())
+														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+													actual = h2;
+													t.anexar(actual.generarTrayectoria(ba.getFila(), ba.getColumna(),
+															dest.getFila(), dest.getColumna()));
+													orig = null;
+													trayP = null;
+													trayH = null;
+												}
+											}
+										}
+									}
+									trayectorias.add(t);
+								}
+							}
 						} else {
 							// mejorar para que borre más de una, si se cruzan?
 							for (Trayectoria t : trayectorias) {
@@ -138,10 +232,8 @@ class Dibujo extends JComponent {
 								|| h1.contiene(e.getX() - 1, e.getY() + 3) && h2.contiene(e.getX() - 1, e.getY() - 3)) {
 							puertas.add(new Puerta(e.getX(), e.getY() - 3, 30, 7, h1, h2, true));
 						}
-						/*
-						 * adyacencias.get(h1).add(h2);
-						 * adyacencias.get(h2).add(h1);
-						 */
+						adyacencias.get(h1).add(h2);
+						adyacencias.get(h2).add(h1);
 					}
 				}
 			}
@@ -165,10 +257,9 @@ class Dibujo extends JComponent {
 								lp.add(p);
 							}
 						}
-						/*
-						 * for (Set<Habitacion> s : adyacencias.values()) {
-						 * s.remove(h); }
-						 */
+						for (Set<Habitacion> s : adyacencias.values()) {
+							s.remove(h);
+						}
 						List<Trayectoria> lt = new ArrayList<Trayectoria>();
 						for (Trayectoria t : trayectorias) {
 							if (t.getHabitaciones().contains(h)) {
@@ -176,7 +267,7 @@ class Dibujo extends JComponent {
 							}
 						}
 						trayectorias.removeAll(lt);
-						// adyacencias.remove(h);
+						adyacencias.remove(h);
 						piso.remove(h);
 						puertas.removeAll(lp);
 					}
@@ -197,7 +288,7 @@ class Dibujo extends JComponent {
 						piso.add(h);
 						h.setLado(Math.min(h.getAlto(), h.getLargo()) / 4 + 1);
 						h.generarBaldosas();
-						// adyacencias.put(h, new HashSet<Habitacion>());
+						adyacencias.put(h, new HashSet<Habitacion>());
 					}
 				}
 				inicio = null;
@@ -354,8 +445,8 @@ class Dibujo extends JComponent {
 		}
 		Color[] colores = { Color.CYAN, Color.BLUE, Color.GREEN, Color.ORANGE, Color.RED, Color.MAGENTA, Color.PINK,
 				Color.YELLOW };
+		int col = -1;
 		for (Habitacion h : piso) {
-			int col = -1;
 			g2.setPaint(new Color(160, 160, 160));
 			for (Baldosa b : h.getBaldosas()) {
 				Rectangle2D r = b.getForma();
@@ -366,15 +457,12 @@ class Dibujo extends JComponent {
 			}
 			g2.setPaint(Color.BLACK);
 			g2.draw(h.getForma());
-			for (Trayectoria t : trayectorias) {
-				if (t.getHabitaciones().contains(h)) {
-					g2.setPaint(colores[col += (col == 7) ? -7 : 1]);
-					for (Camino c : t.getCamino()) {
-						Point p = c.getPunto();
-						g2.fill(h.obtenerBaldosa(p.getX(), p.getY()).getInterior());
-					}
-
-				}
+		}
+		for (Trayectoria t : trayectorias) {
+			g2.setPaint(colores[col += (col == 7) ? -7 : 1]);
+			for (Camino c : t.getCamino()) {
+				Point p = c.getPunto();
+				g2.fill(c.getHabitacion().obtenerBaldosa(p.getX(), p.getY()).getInterior());
 			}
 		}
 		if (trayP != null) {
