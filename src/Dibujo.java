@@ -150,6 +150,7 @@ class Dibujo extends JComponent {
 											}
 										}
 									}
+									break;
 								}
 								trayectorias.add(t);
 							} else {
@@ -182,6 +183,7 @@ class Dibujo extends JComponent {
 												}
 											}
 										}
+										break;
 									}
 									for (Puerta pu : puertas) {
 										if (pu.getH1() == h2 && pu.getH2() == h3
@@ -208,6 +210,7 @@ class Dibujo extends JComponent {
 												}
 											}
 										}
+										break;
 									}
 									trayectorias.add(t);
 								}
