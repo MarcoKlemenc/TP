@@ -81,10 +81,12 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					BufferedReader br = new BufferedReader(new FileReader(archivo));
 					String line = br.readLine();
 					br.close();
-					StringTokenizer st = new StringTokenizer(line, "|");
+					StringTokenizer s = new StringTokenizer(line, "$");
+					StringTokenizer st = new StringTokenizer(s.nextToken(), "|");
 					dibujo.setEscala(st.nextToken());
 					dibujo.setOrientacion(Integer.parseInt(st.nextToken()));
 					while (st.hasMoreTokens()) {
+						Habitacion.setIdActual(Integer.parseInt(st.nextToken()));
 						Habitacion h = new Habitacion(Double.parseDouble(st.nextToken()),
 								Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()),
 								Double.parseDouble(st.nextToken()));
@@ -98,20 +100,22 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 										.cambiarPasar();
 							}
 						}
-						to = new StringTokenizer(st.nextToken(), "%");
-						while (to.hasMoreTokens()) {
-							StringTokenizer tok = new StringTokenizer(to.nextToken(), "Ç");
-							if (tok.countTokens() > 1) {
+					}
+					dibujo.setPiso(piso);
+					if (s.hasMoreTokens()) {
+						st = new StringTokenizer(s.nextToken(), "%");
+						while (st.hasMoreTokens()) {
+							StringTokenizer to = new StringTokenizer(st.nextToken(), "Ç");
+							if (to.countTokens() > 1) {
 								Trayectoria t = new Trayectoria();
-								while (tok.hasMoreTokens()) {
-									t.agregarBaldosa(h, Integer.parseInt(tok.nextToken()),
-											Integer.parseInt(tok.nextToken()));
+								while (to.hasMoreTokens()) {
+									t.agregarBaldosa(dibujo.buscarId(Integer.parseInt(to.nextToken())),
+											Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()));
 								}
 								dibujo.getTrayectorias().add(t);
 							}
 						}
 					}
-					dibujo.setPiso(piso);
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(this, "Archivo no válido", "Error", JOptionPane.ERROR_MESSAGE);
 					dibujo.setEscala(escalaBackup);
@@ -125,8 +129,8 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 				String export = dibujo.getEscala() + "|" + dibujo.getOrientacion() + "|";
 				while (i.hasNext()) {
 					Habitacion area = i.next();
-					export += area.getX() + "|" + area.getY() + "|" + area.getLargo() + "|" + area.getAlto() + "|"
-							+ area.getLado() + "|";
+					export += area.getId() + "|" + area.getX() + "|" + area.getY() + "|" + area.getLargo() + "|"
+							+ area.getAlto() + "|" + area.getLado() + "|";
 					ListIterator<Point> it = area.getNoPasar().listIterator();
 					if (!it.hasNext()) {
 						export += "!";
@@ -136,29 +140,22 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 						export += (int) p.getX() + "&" + (int) p.getY() + "&";
 					}
 					export += "|";
-					ListIterator<Trayectoria> ite = dibujo.getTrayectorias().listIterator();
-					if (!ite.hasNext()) {
-						export += "!";
-					} else {
-						boolean trayectorias = false;
-						while (ite.hasNext()) {
-							Trayectoria t = ite.next();
-							if (t.getHabitaciones().contains(area)) {
-								trayectorias = true;
-								ListIterator<Camino> iter = t.getCamino().listIterator();
-								while (iter.hasNext()) {
-									Point p = iter.next().getPunto();
-									export += (int) p.getX() + "Ç" + (int) p.getY() + "Ç";
-								}
-								export += "%";
-							}
+				}
+				export += "$";
+				ListIterator<Trayectoria> ite = dibujo.getTrayectorias().listIterator();
+				if (!ite.hasNext()) {
+					export += "!";
+				} else {
+					while (ite.hasNext()) {
+						Trayectoria t = ite.next();
+						ListIterator<Camino> iter = t.getCamino().listIterator();
+						while (iter.hasNext()) {
+							Camino c = iter.next();
+							Point p = c.getPunto();
+							export += c.getHabitacion().getId() + "Ç" + (int) p.getX() + "Ç" + (int) p.getY() + "Ç";
 						}
-						if (!trayectorias) {
-							export += "!";
-						}
-						// export = export.substring(0, export.length() - 1);
+						export += "%";
 					}
-					export += "|";
 				}
 				try {
 					Files.write(Paths.get(archivo), export.substring(0, export.length() - 1).getBytes());

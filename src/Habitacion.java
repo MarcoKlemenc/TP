@@ -6,11 +6,14 @@ import java.util.List;
 
 public class Habitacion extends Superficie {
 
+	private static int idActual = 1;
+	private int id;
 	private double lado;
 	private List<Baldosa> baldosas;
 
 	public Habitacion(double x, double y, double largo, double alto) {
 		super(x, y, largo, alto);
+		id = idActual++;
 	}
 
 	public boolean contieneB(Baldosa b) {
@@ -135,6 +138,18 @@ public class Habitacion extends Superficie {
 
 	public void setLado(double lado) {
 		this.lado = lado;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public static void setIdActual(int idActual) {
+		Habitacion.idActual = idActual;
 	}
 
 }
