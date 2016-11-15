@@ -46,32 +46,22 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 	public JMenuBar createMenuBar() {
 		JMenuBar menuBar = new JMenuBar();
 		JMenu menuArchivo = agregarMenu("Archivo", KeyEvent.VK_A);
-		JMenu menuObstaculo = agregarMenu("Obstáculo", KeyEvent.VK_O);
-		JMenu menuTrayectoria = agregarMenu("Trayectoria", KeyEvent.VK_T);
+		JMenu menuEditar = agregarMenu("Editar", KeyEvent.VK_E);
 		menuBar.add(menuArchivo);
-		menuBar.add(menuObstaculo);
-		menuBar.add(menuTrayectoria);
+		menuBar.add(menuEditar);
 		menuArchivo.add(agregarItem("Nuevo", KeyEvent.VK_1));
 		menuArchivo.add(agregarItem("Abrir", KeyEvent.VK_2));
 		menuArchivo.add(agregarItem("Guardar", KeyEvent.VK_3));
 		menuArchivo.add(agregarItem("Exportar", KeyEvent.VK_4));
-		menuArchivo.add(agregarItem("Cambiar escala", KeyEvent.VK_5));
-		menuArchivo.add(agregarItem("Cambiar orientación", KeyEvent.VK_6));
+		menuEditar.add(agregarItem("Cambiar escala", KeyEvent.VK_5));
+		menuEditar.add(agregarItem("Cambiar orientación", KeyEvent.VK_6));
 		return menuBar;
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		String origen = ((JMenuItem) e.getSource()).getText();
 		if (origen == "Nuevo") {
-			// faltan cosas
-			try {
-				dibujo.setOrientacion(0);
-			} catch (Exception e1) {
-			}
-			dibujo.setEscala("5m");
-			piso.setHabitaciones(new ArrayList<Habitacion>());
-			piso.setPuertas(new ArrayList<Puerta>());
-			piso.setTrayectorias(new ArrayList<Trayectoria>());
+			dibujo.eliminar();
 		} else if (origen == "Abrir") {
 			String archivo = Archivo.abrir(".txt");
 			if (archivo != null) {

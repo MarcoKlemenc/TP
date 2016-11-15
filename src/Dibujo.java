@@ -22,7 +22,8 @@ class Dibujo extends JComponent {
 	private Point inicio, fin, trayP;
 	private int desvioX, desvioY, orientacion;
 	private Habitacion actual, temp, trayH;
-	private Baldosa orig, dest;
+	//private Baldosa orig, dest;
+	private Camino orig, dest;
 	private boolean shift, ctrl;
 	private Puerta pTemp = null;
 	private String escala = "5m";
@@ -59,19 +60,20 @@ class Dibujo extends JComponent {
 						actual = l.get(0);
 						Baldosa b = actual.contieneB2(e);
 						if (orig != null && dest == null) {
-							dest = b;
-							Habitacion h1 = piso.baldosaDentro(orig);
-							Habitacion h2 = piso.baldosaDentro(dest);
-							piso.generarTrayectoria(h1, h2, orig, dest);
+							dest = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
+							if (orig != dest) {
+								/*Habitacion h1 = piso.baldosaDentro(orig);
+								Habitacion h2 = piso.baldosaDentro(dest);*/
+								piso.generarTrayectoria(orig, dest);
+							}
 							orig = null;
 							trayP = null;
 							trayH = null;
 						} else {
-							// mejorar para que borre más de una, si se cruzan?
 							if (piso.eliminarTrayectoria(e, b)) {
 								return;
 							}
-							orig = b;
+							orig = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
 							trayP = new Point(b.getFila(), b.getColumna());
 							trayH = actual;
 						}
@@ -343,6 +345,12 @@ class Dibujo extends JComponent {
 		g2.setPaint(Color.BLACK);
 		g2.drawLine(20, 20, 99, 20);
 		g2.drawString(escala, 20, 18);
+	}
+
+	public void eliminar() {
+		piso = new Piso();
+		orientacion = 0;
+		escala = "5m";
 	}
 
 	public String getEscala() {

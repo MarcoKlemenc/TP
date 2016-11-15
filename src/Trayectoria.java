@@ -37,16 +37,8 @@ public class Trayectoria {
 		return camino;
 	}
 
-	public void setCamino(List<Camino> camino) {
-		this.camino = camino;
-	}
-
 	public Set<Habitacion> getHabitaciones() {
 		return habitaciones;
-	}
-
-	public void setHabitaciones(Set<Habitacion> habitaciones) {
-		this.habitaciones = habitaciones;
 	}
 
 }

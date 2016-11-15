@@ -142,10 +142,6 @@ public class Habitacion extends Superficie {
 		return baldosas;
 	}
 
-	public void setBaldosas(List<Baldosa> baldosas) {
-		this.baldosas = baldosas;
-	}
-
 	public int getLado() {
 		return lado;
 	}
@@ -156,10 +152,6 @@ public class Habitacion extends Superficie {
 
 	public int getId() {
 		return id;
-	}
-
-	public void setId(int id) {
-		this.id = id;
 	}
 
 	public static void setIdActual(int idActual) {

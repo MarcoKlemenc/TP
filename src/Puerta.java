@@ -12,16 +12,8 @@ public class Puerta extends Superficie {
 		return h1;
 	}
 
-	public void setH1(Habitacion h1) {
-		this.h1 = h1;
-	}
-
 	public Habitacion getH2() {
 		return h2;
-	}
-
-	public void setH2(Habitacion h2) {
-		this.h2 = h2;
 	}
 
 	public String toString() {

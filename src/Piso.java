@@ -14,8 +14,8 @@ public class Piso {
 	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
 	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
 	private Grafo grafo = null;
-	
-	public boolean eliminarTrayectoria(MouseEvent e, Baldosa b){
+
+	public boolean eliminarTrayectoria(MouseEvent e, Baldosa b) {
 		for (Trayectoria t : trayectorias) {
 			for (Habitacion h : habitaciones) {
 				if (t.buscar(h, b.getCoordenadas()) && t.getHabitaciones().contains(h)
@@ -27,29 +27,28 @@ public class Piso {
 		}
 		return false;
 	}
-	
-	public void generarTrayectoria(Habitacion h1, Habitacion h2, Baldosa orig, Baldosa dest){
+
+	public void generarTrayectoria(Camino orig, Camino dest) {
+		Habitacion h1 = orig.getHabitacion();
+		Habitacion h2 = dest.getHabitacion();
 		if (h1 == h2) {
-			trayectorias.add(h1.generarTrayectoria(orig.getFila(), orig.getColumna(),
-					dest.getFila(), dest.getColumna()));
+			trayectorias
+					.add(h1.generarTrayectoria(orig.getFila(), orig.getColumna(), dest.getFila(), dest.getColumna()));
 		} else if (h1 != h2 && adyacencias.get(h1).contains(h2)) {
 			Trayectoria t = null;
 			for (Puerta pu : puertas) {
 				if (pu.getH1() == h1 && pu.getH2() == h2 || pu.getH1() == h2 && pu.getH2() == h1) {
 					for (Baldosa ba : h1.getBaldosas()) {
-						if (ba.contiene(pu.getX(), pu.getY())
-								|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+						if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
 								|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-							t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(),
-									ba.getFila(), ba.getColumna());
+							t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), ba.getFila(), ba.getColumna());
 						}
 					}
 					for (Baldosa ba : h2.getBaldosas()) {
-						if (ba.contiene(pu.getX(), pu.getY())
-								|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+						if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
 								|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-							t.anexar(h2.generarTrayectoria(ba.getFila(), ba.getColumna(),
-									dest.getFila(), dest.getColumna()));
+							t.anexar(h2.generarTrayectoria(ba.getFila(), ba.getColumna(), dest.getFila(),
+									dest.getColumna()));
 						}
 					}
 				}
@@ -67,19 +66,16 @@ public class Piso {
 			if (!cerca.isEmpty()) {
 				Trayectoria t = null;
 				for (Puerta pu : puertas) {
-					if (pu.getH1() == h1 && pu.getH2() == h3
-							|| pu.getH1() == h3 && pu.getH2() == h1) {
+					if (pu.getH1() == h1 && pu.getH2() == h3 || pu.getH1() == h3 && pu.getH2() == h1) {
 						for (Baldosa ba : h1.getBaldosas()) {
-							if (ba.contiene(pu.getX(), pu.getY())
-									|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+							if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
 									|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-								t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(),
-										ba.getFila(), ba.getColumna());
+								t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), ba.getFila(),
+										ba.getColumna());
 							}
 						}
 						for (Baldosa ba : h3.getBaldosas()) {
-							if (ba.contiene(pu.getX(), pu.getY())
-									|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+							if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
 									|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
 								inicioTemp = ba;
 							}
@@ -88,23 +84,20 @@ public class Piso {
 					break;
 				}
 				for (Puerta pu : puertas) {
-					if (pu.getH1() == h2 && pu.getH2() == h3
-							|| pu.getH1() == h3 && pu.getH2() == h2) {
+					if (pu.getH1() == h2 && pu.getH2() == h3 || pu.getH1() == h3 && pu.getH2() == h2) {
 						for (Baldosa ba : h3.getBaldosas()) {
-							if (ba.contiene(pu.getX(), pu.getY())
-									|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+							if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
 									|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-								t.anexar(h3.generarTrayectoria(inicioTemp.getFila(),
-										inicioTemp.getColumna(), ba.getFila(), ba.getColumna()));
+								t.anexar(h3.generarTrayectoria(inicioTemp.getFila(), inicioTemp.getColumna(),
+										ba.getFila(), ba.getColumna()));
 							}
 						}
 						for (Baldosa ba : h2.getBaldosas()) {
-							if (ba.contiene(pu.getX(), pu.getY())
-									|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+							if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
 									|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-								t.anexar(h2.generarTrayectoria(ba.getFila(), ba.getColumna(),
-										dest.getFila(), dest.getColumna()));
-								
+								t.anexar(h2.generarTrayectoria(ba.getFila(), ba.getColumna(), dest.getFila(),
+										dest.getColumna()));
+
 							}
 						}
 					}
@@ -191,24 +184,12 @@ public class Piso {
 		return puertas;
 	}
 
-	public void setPuertas(List<Puerta> puertas) {
-		this.puertas = puertas;
-	}
-
 	public List<Trayectoria> getTrayectorias() {
 		return trayectorias;
 	}
 
-	public void setTrayectorias(List<Trayectoria> trayectorias) {
-		this.trayectorias = trayectorias;
-	}
-
 	public Map<Habitacion, Set<Habitacion>> getAdyacencias() {
 		return adyacencias;
-	}
-
-	public void setAdyacencias(Map<Habitacion, Set<Habitacion>> adyacencias) {
-		this.adyacencias = adyacencias;
 	}
 
 	public Grafo getGrafo() {

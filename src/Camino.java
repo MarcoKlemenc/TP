@@ -14,16 +14,16 @@ public class Camino {
 		return habitacion;
 	}
 
-	public void setHabitacion(Habitacion habitacion) {
-		this.habitacion = habitacion;
-	}
-
 	public Point getPunto() {
 		return punto;
 	}
-
-	public void setPunto(Point punto) {
-		this.punto = punto;
+	
+	public int getFila(){
+		return (int) punto.getX();
+	}
+	
+	public int getColumna(){
+		return (int) punto.getY();
 	}
 
 }
