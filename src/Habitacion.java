@@ -94,11 +94,16 @@ public class Habitacion extends Superficie {
 					columnaA -= Math.signum(columnaA - columnaB);
 				}
 			} else {
-				if (obtenerBaldosa(filaA, columnaA - 1).isPasar()) {
+				if (columnaA > 1 && obtenerBaldosa(filaA, columnaA - 1).isPasar()) {
 					columnaA--;
 					while (!obtenerBaldosa(filaA, columnaA + 1).isPasar()) {
 						t.agregarBaldosa(this, filaA, columnaA);
-						filaA--;
+						if (filaA > 1) {
+							filaA--;
+						} else {
+							filaA++;
+						}
+
 					}
 				} else if (obtenerBaldosa(filaA - 1, columnaA).isPasar()) {
 					filaA--;

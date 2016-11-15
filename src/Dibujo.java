@@ -35,10 +35,10 @@ class Dibujo extends JComponent {
 	private boolean shift, ctrl;
 	private Puerta pTemp = null;
 	private String escala = "5m";
-	
-	public Habitacion buscarId(int id){
-		for(Habitacion h : piso){
-			if (h.getId() == id){
+
+	public Habitacion buscarId(int id) {
+		for (Habitacion h : piso) {
+			if (h.getId() == id) {
 				return h;
 			}
 		}

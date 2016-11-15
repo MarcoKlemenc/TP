@@ -8,9 +8,9 @@ public class Trayectoria {
 
 	private List<Camino> camino = new ArrayList<Camino>();
 	private Set<Habitacion> habitaciones = new HashSet<Habitacion>();
-	
-	public void anexar(Trayectoria t){
-		for (Camino c : t.getCamino()){
+
+	public void anexar(Trayectoria t) {
+		for (Camino c : t.getCamino()) {
 			camino.add(c);
 		}
 	}
