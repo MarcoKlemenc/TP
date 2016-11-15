@@ -1,4 +1,5 @@
 import java.awt.Point;
+import java.awt.event.MouseEvent;
 import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -22,6 +23,15 @@ public class Habitacion extends Superficie {
 			}
 		}
 		return false;
+	}
+
+	public Baldosa contieneB2(MouseEvent e) {
+		for (Baldosa b : baldosas) {
+			if (b.contiene(e.getX(), e.getY())) {
+				return b;
+			}
+		}
+		return null;
 	}
 
 	public List<Point> getNoPasar() {

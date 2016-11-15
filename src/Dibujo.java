@@ -10,11 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -22,11 +18,7 @@ import javax.swing.SwingUtilities;
 class Dibujo extends JComponent {
 
 	private static final long serialVersionUID = 1L;
-	private List<Habitacion> piso = new ArrayList<Habitacion>();
-	private List<Puerta> puertas = new ArrayList<Puerta>();
-	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
-	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
-	private Grafo grafo = null;
+	private Piso piso = new Piso();
 	private Point inicio, fin, trayP;
 	private int desvioX, desvioY, orientacion;
 	private Habitacion actual, temp, trayH;
@@ -34,62 +26,6 @@ class Dibujo extends JComponent {
 	private boolean shift, ctrl;
 	private Puerta pTemp = null;
 	private String escala = "5m";
-
-	public Habitacion buscarId(int id) {
-		for (Habitacion h : piso) {
-			if (h.getId() == id) {
-				return h;
-			}
-		}
-		return null;
-	}
-
-	private Habitacion baldosaDentro(Baldosa b) {
-		for (Habitacion h : piso) {
-			if (h.contieneB(b)) {
-				return h;
-			}
-		}
-		return null;
-	}
-
-	private List<Habitacion> contiene(MouseEvent e) {
-		List<Habitacion> l = new ArrayList<Habitacion>();
-		for (Habitacion h : piso) {
-			if (h.contiene(e.getX(), e.getY())) {
-				l.add(h);
-			}
-		}
-		return l;
-	}
-
-	private Baldosa contieneB(MouseEvent e) {
-		for (Baldosa b : actual.getBaldosas()) {
-			if (b.contiene(e.getX(), e.getY())) {
-				return b;
-			}
-		}
-		return null;
-	}
-
-	private Puerta contieneP(MouseEvent e) {
-		for (Puerta p : puertas) {
-			if (p.contiene(e.getX(), e.getY())) {
-				return p;
-			}
-		}
-		return null;
-	}
-
-	private List<Habitacion> cruza(Habitacion o) {
-		List<Habitacion> l = new ArrayList<Habitacion>();
-		for (Habitacion h : piso) {
-			if (o.intersecta(h)) {
-				l.add(h);
-			}
-		}
-		return l;
-	}
 
 	public Dibujo() {
 
@@ -112,127 +48,28 @@ class Dibujo extends JComponent {
 		this.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {
-				List<Habitacion> l = contiene(e);
+				List<Habitacion> l = piso.contiene(e);
 				if (SwingUtilities.isLeftMouseButton(e)) {
-					Puerta p = contieneP(e);
+					Puerta p = piso.contieneP(e);
 					if (p != null) {
-						puertas.remove(p);
+						piso.eliminarPuerta(p);
 						return;
 					}
 					if (l.size() == 1) {
 						actual = l.get(0);
-						Baldosa b = contieneB(e);
+						Baldosa b = actual.contieneB2(e);
 						if (orig != null && dest == null) {
 							dest = b;
-							Habitacion h1 = baldosaDentro(orig);
-							Habitacion h2 = baldosaDentro(dest);
-							if (h1 == h2) {
-								trayectorias.add(actual.generarTrayectoria(orig.getFila(), orig.getColumna(),
-										dest.getFila(), dest.getColumna()));
-								orig = null;
-								trayP = null;
-								trayH = null;
-							} else if (h1 != h2 && adyacencias.get(h1).contains(h2)) {
-								Trayectoria t = null;
-								for (Puerta pu : puertas) {
-									if (pu.getH1() == h1 && pu.getH2() == h2 || pu.getH1() == h2 && pu.getH2() == h1) {
-										for (Baldosa ba : h1.getBaldosas()) {
-											if (ba.contiene(pu.getX(), pu.getY())
-													|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-													|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-												actual = h1;
-												t = actual.generarTrayectoria(orig.getFila(), orig.getColumna(),
-														ba.getFila(), ba.getColumna());
-											}
-										}
-										for (Baldosa ba : h2.getBaldosas()) {
-											if (ba.contiene(pu.getX(), pu.getY())
-													|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-													|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-												actual = h2;
-												t.anexar(actual.generarTrayectoria(ba.getFila(), ba.getColumna(),
-														dest.getFila(), dest.getColumna()));
-												orig = null;
-												trayP = null;
-												trayH = null;
-											}
-										}
-									}
-									break;
-								}
-								trayectorias.add(t);
-							} else {
-								Set<Habitacion> cerca = new HashSet<Habitacion>();
-								cerca.add(h2);
-								cerca.addAll(adyacencias.get(h2));
-								cerca.retainAll(adyacencias.get(h1));
-								Iterator<Habitacion> azar = cerca.iterator();
-								Habitacion h3 = azar.next();
-								Baldosa inicioTemp = null;
-								if (!cerca.isEmpty()) {
-									Trayectoria t = null;
-									for (Puerta pu : puertas) {
-										if (pu.getH1() == h1 && pu.getH2() == h3
-												|| pu.getH1() == h3 && pu.getH2() == h1) {
-											for (Baldosa ba : h1.getBaldosas()) {
-												if (ba.contiene(pu.getX(), pu.getY())
-														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-														|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-													actual = h1;
-													t = actual.generarTrayectoria(orig.getFila(), orig.getColumna(),
-															ba.getFila(), ba.getColumna());
-												}
-											}
-											for (Baldosa ba : h3.getBaldosas()) {
-												if (ba.contiene(pu.getX(), pu.getY())
-														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-														|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-													inicioTemp = ba;
-												}
-											}
-										}
-										break;
-									}
-									for (Puerta pu : puertas) {
-										if (pu.getH1() == h2 && pu.getH2() == h3
-												|| pu.getH1() == h3 && pu.getH2() == h2) {
-											for (Baldosa ba : h3.getBaldosas()) {
-												if (ba.contiene(pu.getX(), pu.getY())
-														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-														|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-													actual = h3;
-													t.anexar(actual.generarTrayectoria(inicioTemp.getFila(),
-															inicioTemp.getColumna(), ba.getFila(), ba.getColumna()));
-												}
-											}
-											for (Baldosa ba : h2.getBaldosas()) {
-												if (ba.contiene(pu.getX(), pu.getY())
-														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-														|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-													actual = h2;
-													t.anexar(actual.generarTrayectoria(ba.getFila(), ba.getColumna(),
-															dest.getFila(), dest.getColumna()));
-													orig = null;
-													trayP = null;
-													trayH = null;
-												}
-											}
-										}
-										break;
-									}
-									trayectorias.add(t);
-								}
-							}
+							Habitacion h1 = piso.baldosaDentro(orig);
+							Habitacion h2 = piso.baldosaDentro(dest);
+							piso.generarTrayectoria(h1, h2, orig, dest);
+							orig = null;
+							trayP = null;
+							trayH = null;
 						} else {
 							// mejorar para que borre más de una, si se cruzan?
-							for (Trayectoria t : trayectorias) {
-								for (Habitacion h : piso) {
-									if (t.buscar(h, b.getCoordenadas()) && t.getHabitaciones().contains(h)
-											&& h.contiene(e.getX(), e.getY())) {
-										trayectorias.remove(t);
-										return;
-									}
-								}
+							if (piso.eliminarTrayectoria(e, b)) {
+								return;
 							}
 							orig = b;
 							trayP = new Point(b.getFila(), b.getColumna());
@@ -244,19 +81,17 @@ class Dibujo extends JComponent {
 						Habitacion h2 = l.get(1);
 						if (h1.contiene(e.getX() - 3, e.getY() - 1) && h2.contiene(e.getX() + 3, e.getY() - 1)
 								|| h1.contiene(e.getX() + 3, e.getY() - 1) && h2.contiene(e.getX() - 3, e.getY() - 1)) {
-							puertas.add(new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2));
+							piso.agregarPuerta(e.getX() - 3, e.getY(), 7, 30, h1, h2);
 						} else if (h1.contiene(e.getX() - 1, e.getY() - 3) && h2.contiene(e.getX() - 1, e.getY() + 3)
 								|| h1.contiene(e.getX() - 1, e.getY() + 3) && h2.contiene(e.getX() - 1, e.getY() - 3)) {
-							puertas.add(new Puerta(e.getX(), e.getY() - 3, 30, 7, h1, h2));
+							piso.agregarPuerta(e.getX(), e.getY() - 3, 30, 7, h1, h2);
 						}
-						adyacencias.get(h1).add(h2);
-						adyacencias.get(h2).add(h1);
 					}
 				}
 			}
 
 			public void mousePressed(MouseEvent e) {
-				List<Habitacion> l = contiene(e);
+				List<Habitacion> l = piso.contiene(e);
 				if (SwingUtilities.isLeftMouseButton(e)) {
 					if (l.size() == 1) {
 						actual = l.get(0);
@@ -269,29 +104,29 @@ class Dibujo extends JComponent {
 					if (l.size() == 1) {
 						Habitacion h = l.get(0);
 						List<Puerta> lp = new ArrayList<Puerta>();
-						for (Puerta p : puertas) {
+						for (Puerta p : piso.getPuertas()) {
 							if (p.getH1() == h || p.getH2() == h) {
 								lp.add(p);
 							}
 						}
-						for (Set<Habitacion> s : adyacencias.values()) {
+						for (Set<Habitacion> s : piso.getAdyacencias().values()) {
 							s.remove(h);
 						}
 						List<Trayectoria> lt = new ArrayList<Trayectoria>();
-						for (Trayectoria t : trayectorias) {
+						for (Trayectoria t : piso.getTrayectorias()) {
 							if (t.getHabitaciones().contains(h)) {
 								lt.add(t);
 							}
 						}
-						trayectorias.removeAll(lt);
-						adyacencias.remove(h);
-						piso.remove(h);
-						puertas.removeAll(lp);
+						piso.getTrayectorias().removeAll(lt);
+						piso.getAdyacencias().remove(h);
+						piso.getHabitaciones().remove(h);
+						piso.getPuertas().removeAll(lp);
 					}
 				} else if (SwingUtilities.isMiddleMouseButton(e)) {
 					if (l.size() == 1) {
 						actual = l.get(0);
-						contieneB(e).cambiarPasar();
+						actual.contieneB2(e).cambiarPasar();
 					}
 				}
 				repaint();
@@ -301,11 +136,10 @@ class Dibujo extends JComponent {
 				if (SwingUtilities.isLeftMouseButton(e) && actual == null && temp != null && temp.getLargo() >= 2
 						&& temp.getAlto() >= 2) {
 					Habitacion h = new Habitacion(temp.getX(), temp.getY(), temp.getLargo(), temp.getAlto());
-					if (cruza(h).size() == 0) {
-						piso.add(h);
+					if (piso.cruza(h).size() == 0) {
+						piso.getHabitaciones().add(h);
 						h.setLado(Math.min(h.getAlto(), h.getLargo()) / 4 + 1);
 						h.generarBaldosas();
-						adyacencias.put(h, new HashSet<Habitacion>());
 					}
 				}
 				inicio = null;
@@ -318,7 +152,7 @@ class Dibujo extends JComponent {
 		this.addMouseMotionListener(new MouseMotionAdapter() {
 
 			public void mouseMoved(MouseEvent e) {
-				List<Habitacion> l = contiene(e);
+				List<Habitacion> l = piso.contiene(e);
 				if (l.size() == 2) {
 					Habitacion h1 = l.get(0);
 					Habitacion h2 = l.get(1);
@@ -337,14 +171,14 @@ class Dibujo extends JComponent {
 
 			public void mouseDragged(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e)) {
-					Puerta p = contieneP(e);
+					Puerta p = piso.contieneP(e);
 					if (p != null) {
 						p.setAlto(e.getY() - p.getY());
 					}
 					if (actual == null) {
 						fin = new Point(e.getX(), e.getY());
 					} else {
-						for (Puerta pu : puertas) {
+						for (Puerta pu : piso.getPuertas()) {
 							if ((pu.getH1() == actual || pu.getH2() == actual) && !ctrl) {
 								actual = null;
 								return;
@@ -352,10 +186,10 @@ class Dibujo extends JComponent {
 						}
 						int x = e.getX() - actual.getX();
 						int y = e.getY() - actual.getY();
-						List<Habitacion> l = cruza(actual);
+						List<Habitacion> l = piso.cruza(actual);
 						if (shift && !ctrl) {
 							if (actual.getLargo() <= 2 || actual.getAlto() <= 2) {
-								piso.remove(actual);
+								piso.getHabitaciones().remove(actual);
 								repaint();
 								return;
 							}
@@ -463,7 +297,7 @@ class Dibujo extends JComponent {
 		Color[] colores = { Color.CYAN, Color.BLUE, Color.GREEN, Color.ORANGE, Color.RED, Color.MAGENTA, Color.PINK,
 				Color.YELLOW };
 		int col = -1;
-		for (Habitacion h : piso) {
+		for (Habitacion h : piso.getHabitaciones()) {
 			g2.setPaint(new Color(160, 160, 160));
 			for (Baldosa b : h.getBaldosas()) {
 				Rectangle2D r = b.getForma();
@@ -475,7 +309,7 @@ class Dibujo extends JComponent {
 			g2.setPaint(Color.BLACK);
 			g2.draw(h.getForma());
 		}
-		for (Trayectoria t : trayectorias) {
+		for (Trayectoria t : piso.getTrayectorias()) {
 			g2.setPaint(colores[col += (col == 7) ? -7 : 1]);
 			for (Camino c : t.getCamino()) {
 				Point p = c.getPunto();
@@ -484,13 +318,13 @@ class Dibujo extends JComponent {
 		}
 		if (trayP != null) {
 			g2.setPaint(new Color(192, 192, 192, 128));
-			for (Habitacion h : piso) {
+			for (Habitacion h : piso.getHabitaciones()) {
 				if (h == trayH) {
 					g2.fill(h.obtenerBaldosa(trayP.getX(), trayP.getY()).getForma());
 				}
 			}
 		}
-		for (Puerta p : puertas) {
+		for (Puerta p : piso.getPuertas()) {
 			g2.setPaint(Color.BLACK);
 			g2.fill(p.getForma());
 		}
@@ -503,36 +337,12 @@ class Dibujo extends JComponent {
 			temp = new Habitacion(Math.min(inicio.x, fin.x), Math.min(inicio.y, fin.y), Math.abs(inicio.x - fin.x),
 					Math.abs(inicio.y - fin.y));
 			g2.draw(temp.getForma());
-			g2.setPaint(cruza(temp).size() != 0 ? new Color(255, 0, 0, 64) : new Color(0, 255, 0, 32));
+			g2.setPaint(piso.cruza(temp).size() != 0 ? new Color(255, 0, 0, 64) : new Color(0, 255, 0, 32));
 			g2.fill(temp.getForma());
 		}
 		g2.setPaint(Color.BLACK);
 		g2.drawLine(20, 20, 99, 20);
 		g2.drawString(escala, 20, 18);
-	}
-
-	public List<Habitacion> getPiso() {
-		return piso;
-	}
-
-	public void setPiso(List<Habitacion> piso) {
-		this.piso = piso;
-	}
-
-	public List<Puerta> getPuertas() {
-		return puertas;
-	}
-
-	public void setPuertas(List<Puerta> puertas) {
-		this.puertas = puertas;
-	}
-
-	public List<Trayectoria> getTrayectorias() {
-		return trayectorias;
-	}
-
-	public void setTrayectorias(List<Trayectoria> trayectorias) {
-		this.trayectorias = trayectorias;
 	}
 
 	public String getEscala() {
@@ -555,8 +365,12 @@ class Dibujo extends JComponent {
 		}
 	}
 
-	public Map<Habitacion, Set<Habitacion>> getAdyacencias() {
-		return adyacencias;
+	public Piso getPiso() {
+		return piso;
+	}
+
+	public void setPiso(Piso piso) {
+		this.piso = piso;
 	}
 
 }

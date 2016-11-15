@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.StringTokenizer;
@@ -29,6 +28,7 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 
 	private static final long serialVersionUID = 1L;
 	private Dibujo dibujo = new Dibujo();
+	private Piso piso;
 
 	private JMenu agregarMenu(String texto, int atajo) {
 		JMenu menu = new JMenu(texto);
@@ -69,16 +69,16 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 			} catch (Exception e1) {
 			}
 			dibujo.setEscala("5m");
-			dibujo.setPiso(new ArrayList<Habitacion>());
-			dibujo.setPuertas(new ArrayList<Puerta>());
-			dibujo.setTrayectorias(new ArrayList<Trayectoria>());
+			piso.setHabitaciones(new ArrayList<Habitacion>());
+			piso.setPuertas(new ArrayList<Puerta>());
+			piso.setTrayectorias(new ArrayList<Trayectoria>());
 		} else if (origen == "Abrir") {
 			String archivo = Archivo.abrir(".txt");
 			if (archivo != null) {
 				String escalaBackup = dibujo.getEscala();
-				List<Habitacion> pisoBackup = dibujo.getPiso();
+				List<Habitacion> habitacionesBackup = piso.getHabitaciones();
 				try {
-					List<Habitacion> piso = new ArrayList<Habitacion>();
+					List<Habitacion> habitaciones = new ArrayList<Habitacion>();
 					BufferedReader br = new BufferedReader(new FileReader(archivo));
 					String line = br.readLine();
 					br.close();
@@ -93,7 +93,7 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 								Integer.parseInt(st.nextToken()));
 						h.setLado(Integer.parseInt(st.nextToken()));
 						h.generarBaldosas();
-						piso.add(h);
+						habitaciones.add(h);
 						StringTokenizer to = new StringTokenizer(st.nextToken(), "&");
 						if (to.countTokens() > 1) {
 							while (to.hasMoreTokens()) {
@@ -102,7 +102,7 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 							}
 						}
 					}
-					dibujo.setPiso(piso);
+					piso.setHabitaciones(habitaciones);
 					if (s.hasMoreTokens()) {
 						st = new StringTokenizer(s.nextToken(), "%");
 						while (st.hasMoreTokens()) {
@@ -110,44 +110,33 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 							if (to.countTokens() > 1) {
 								Trayectoria t = new Trayectoria();
 								while (to.hasMoreTokens()) {
-									t.agregarBaldosa(dibujo.buscarId(Integer.parseInt(to.nextToken())),
+									t.agregarBaldosa(piso.buscarId(Integer.parseInt(to.nextToken())),
 											Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()));
 								}
-								dibujo.getTrayectorias().add(t);
+								piso.getTrayectorias().add(t);
 							}
 						}
 					}
 					if (s.hasMoreTokens()) {
 						st = new StringTokenizer(s.nextToken(), "Ç");
 						while (st.hasMoreTokens()) {
-							Puerta p = new Puerta(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
+							piso.agregarPuerta(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
 									Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
-									dibujo.buscarId(Integer.parseInt(st.nextToken())),
-									dibujo.buscarId(Integer.parseInt(st.nextToken())));
-							dibujo.getPuertas().add(p);
-							Habitacion h1 = p.getH1();
-							Habitacion h2 = p.getH2();
-							if (!dibujo.getAdyacencias().containsKey(h1)) {
-								dibujo.getAdyacencias().put(h1, new HashSet<Habitacion>());
-							}
-							dibujo.getAdyacencias().get(h1).add(h2);
-							if (!dibujo.getAdyacencias().containsKey(h2)) {
-								dibujo.getAdyacencias().put(h2, new HashSet<Habitacion>());
-							}
-							dibujo.getAdyacencias().get(h2).add(h1);
+									piso.buscarId(Integer.parseInt(st.nextToken())),
+									piso.buscarId(Integer.parseInt(st.nextToken())));
 						}
 					}
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(this, "Archivo no válido", "Error", JOptionPane.ERROR_MESSAGE);
 					dibujo.setEscala(escalaBackup);
-					dibujo.setPiso(pisoBackup);
+					piso.setHabitaciones(habitacionesBackup);
 					ex.printStackTrace();
 				}
 			}
 		} else if (origen == "Guardar") {
 			String archivo = Archivo.guardar(".txt");
 			if (archivo != null) {
-				ListIterator<Habitacion> i = dibujo.getPiso().listIterator();
+				ListIterator<Habitacion> i = piso.getHabitaciones().listIterator();
 				String export = dibujo.getEscala() + "|" + dibujo.getOrientacion() + "|";
 				while (i.hasNext()) {
 					Habitacion area = i.next();
@@ -164,7 +153,7 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					export += "|";
 				}
 				export += "$";
-				ListIterator<Trayectoria> it = dibujo.getTrayectorias().listIterator();
+				ListIterator<Trayectoria> it = piso.getTrayectorias().listIterator();
 				if (!it.hasNext()) {
 					export += "!";
 				} else {
@@ -180,7 +169,7 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					}
 				}
 				export += "$";
-				ListIterator<Puerta> ite = dibujo.getPuertas().listIterator();
+				ListIterator<Puerta> ite = piso.getPuertas().listIterator();
 				if (!ite.hasNext()) {
 					export += "!";
 				} else {
@@ -233,6 +222,7 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		add(dibujo, BorderLayout.CENTER);
+		piso = dibujo.getPiso();
 		setVisible(true);
 	}
 
