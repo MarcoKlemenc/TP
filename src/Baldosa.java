@@ -4,7 +4,6 @@ public class Baldosa extends Superficie {
 
 	private int fila, columna;
 	private boolean pasar = true;
-	private boolean conecta = false;
 
 	public Baldosa(double x, double y, double largo, double alto, int fila, int columna) {
 		super(x, y, largo, alto);
@@ -38,14 +37,6 @@ public class Baldosa extends Superficie {
 
 	public void setColumna(int columna) {
 		this.columna = columna;
-	}
-
-	public boolean isConecta() {
-		return conecta;
-	}
-
-	public void setConecta(boolean conecta) {
-		this.conecta = conecta;
 	}
 
 }

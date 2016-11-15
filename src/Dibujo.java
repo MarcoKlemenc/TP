@@ -130,7 +130,8 @@ class Dibujo extends JComponent {
 									if (pu.getH1() == h1 && pu.getH2() == h2 || pu.getH1() == h2 && pu.getH2() == h1) {
 										for (Baldosa ba : h1.getBaldosas()) {
 											if (ba.contiene(pu.getX(), pu.getY())
-													|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+													|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+													|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
 												actual = h1;
 												t = actual.generarTrayectoria(orig.getFila(), orig.getColumna(),
 														ba.getFila(), ba.getColumna());
@@ -138,7 +139,8 @@ class Dibujo extends JComponent {
 										}
 										for (Baldosa ba : h2.getBaldosas()) {
 											if (ba.contiene(pu.getX(), pu.getY())
-													|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+													|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+													|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
 												actual = h2;
 												t.anexar(actual.generarTrayectoria(ba.getFila(), ba.getColumna(),
 														dest.getFila(), dest.getColumna()));
@@ -165,7 +167,8 @@ class Dibujo extends JComponent {
 												|| pu.getH1() == h3 && pu.getH2() == h1) {
 											for (Baldosa ba : h1.getBaldosas()) {
 												if (ba.contiene(pu.getX(), pu.getY())
-														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+														|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
 													actual = h1;
 													t = actual.generarTrayectoria(orig.getFila(), orig.getColumna(),
 															ba.getFila(), ba.getColumna());
@@ -173,7 +176,8 @@ class Dibujo extends JComponent {
 											}
 											for (Baldosa ba : h3.getBaldosas()) {
 												if (ba.contiene(pu.getX(), pu.getY())
-														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+														|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
 													inicioTemp = ba;
 												}
 											}
@@ -184,7 +188,8 @@ class Dibujo extends JComponent {
 												|| pu.getH1() == h3 && pu.getH2() == h2) {
 											for (Baldosa ba : h3.getBaldosas()) {
 												if (ba.contiene(pu.getX(), pu.getY())
-														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+														|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
 													actual = h3;
 													t.anexar(actual.generarTrayectoria(inicioTemp.getFila(),
 															inicioTemp.getColumna(), ba.getFila(), ba.getColumna()));
@@ -192,7 +197,8 @@ class Dibujo extends JComponent {
 											}
 											for (Baldosa ba : h2.getBaldosas()) {
 												if (ba.contiene(pu.getX(), pu.getY())
-														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())) {
+														|| ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
+														|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
 													actual = h2;
 													t.anexar(actual.generarTrayectoria(ba.getFila(), ba.getColumna(),
 															dest.getFila(), dest.getColumna()));
