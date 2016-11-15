@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.StringTokenizer;
@@ -119,11 +120,21 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					if (s.hasMoreTokens()) {
 						st = new StringTokenizer(s.nextToken(), "Ç");
 						while (st.hasMoreTokens()) {
-							dibujo.getPuertas()
-									.add(new Puerta(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
-											Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
-											dibujo.buscarId(Integer.parseInt(st.nextToken())),
-											dibujo.buscarId(Integer.parseInt(st.nextToken()))));
+							Puerta p = new Puerta(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
+									Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
+									dibujo.buscarId(Integer.parseInt(st.nextToken())),
+									dibujo.buscarId(Integer.parseInt(st.nextToken())));
+							dibujo.getPuertas().add(p);
+							Habitacion h1 = p.getH1();
+							Habitacion h2 = p.getH2();
+							if (!dibujo.getAdyacencias().containsKey(h1)) {
+								dibujo.getAdyacencias().put(h1, new HashSet<Habitacion>());
+							}
+							dibujo.getAdyacencias().get(h1).add(h2);
+							if (!dibujo.getAdyacencias().containsKey(h2)) {
+								dibujo.getAdyacencias().put(h2, new HashSet<Habitacion>());
+							}
+							dibujo.getAdyacencias().get(h2).add(h1);
 						}
 					}
 				} catch (Exception ex) {

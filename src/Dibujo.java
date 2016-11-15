@@ -553,7 +553,10 @@ class Dibujo extends JComponent {
 		} else {
 			throw new Exception();
 		}
+	}
 
+	public Map<Habitacion, Set<Habitacion>> getAdyacencias() {
+		return adyacencias;
 	}
 
 }
