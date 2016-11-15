@@ -28,8 +28,7 @@ class Dibujo extends JComponent {
 	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
 	private Grafo grafo = null;
 	private Point inicio, fin, trayP;
-	private double desvioX, desvioY;
-	private int orientacion;
+	private int desvioX, desvioY, orientacion;
 	private Habitacion actual, temp, trayH;
 	private Baldosa orig, dest;
 	private boolean shift, ctrl;
@@ -245,10 +244,10 @@ class Dibujo extends JComponent {
 						Habitacion h2 = l.get(1);
 						if (h1.contiene(e.getX() - 3, e.getY() - 1) && h2.contiene(e.getX() + 3, e.getY() - 1)
 								|| h1.contiene(e.getX() + 3, e.getY() - 1) && h2.contiene(e.getX() - 3, e.getY() - 1)) {
-							puertas.add(new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2, true));
+							puertas.add(new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2));
 						} else if (h1.contiene(e.getX() - 1, e.getY() - 3) && h2.contiene(e.getX() - 1, e.getY() + 3)
 								|| h1.contiene(e.getX() - 1, e.getY() + 3) && h2.contiene(e.getX() - 1, e.getY() - 3)) {
-							puertas.add(new Puerta(e.getX(), e.getY() - 3, 30, 7, h1, h2, true));
+							puertas.add(new Puerta(e.getX(), e.getY() - 3, 30, 7, h1, h2));
 						}
 						adyacencias.get(h1).add(h2);
 						adyacencias.get(h2).add(h1);
@@ -325,10 +324,10 @@ class Dibujo extends JComponent {
 					Habitacion h2 = l.get(1);
 					if (h1.contiene(e.getX() - 3, e.getY() - 1) && h2.contiene(e.getX() + 3, e.getY() - 1)
 							|| h1.contiene(e.getX() + 3, e.getY() - 1) && h2.contiene(e.getX() - 3, e.getY() - 1)) {
-						pTemp = new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2, true);
+						pTemp = new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2);
 					} else if (h1.contiene(e.getX() - 1, e.getY() - 3) && h2.contiene(e.getX() - 1, e.getY() + 3)
 							|| h1.contiene(e.getX() - 1, e.getY() + 3) && h2.contiene(e.getX() - 1, e.getY() - 3)) {
-						pTemp = new Puerta(e.getX(), e.getY() - 3, 30, 7, h1, h2, true);
+						pTemp = new Puerta(e.getX(), e.getY() - 3, 30, 7, h1, h2);
 					}
 				} else {
 					pTemp = null;
@@ -351,8 +350,8 @@ class Dibujo extends JComponent {
 								return;
 							}
 						}
-						double x = e.getX() - actual.getX();
-						double y = e.getY() - actual.getY();
+						int x = e.getX() - actual.getX();
+						int y = e.getY() - actual.getY();
 						List<Habitacion> l = cruza(actual);
 						if (shift && !ctrl) {
 							if (actual.getLargo() <= 2 || actual.getAlto() <= 2) {

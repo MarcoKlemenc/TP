@@ -87,10 +87,10 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					dibujo.setOrientacion(Integer.parseInt(st.nextToken()));
 					while (st.hasMoreTokens()) {
 						Habitacion.setIdActual(Integer.parseInt(st.nextToken()));
-						Habitacion h = new Habitacion(Double.parseDouble(st.nextToken()),
-								Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()),
-								Double.parseDouble(st.nextToken()));
-						h.setLado(Double.parseDouble(st.nextToken()));
+						Habitacion h = new Habitacion(Integer.parseInt(st.nextToken()),
+								Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
+								Integer.parseInt(st.nextToken()));
+						h.setLado(Integer.parseInt(st.nextToken()));
 						h.generarBaldosas();
 						piso.add(h);
 						StringTokenizer to = new StringTokenizer(st.nextToken(), "&");
@@ -116,10 +116,21 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 							}
 						}
 					}
+					if (s.hasMoreTokens()) {
+						st = new StringTokenizer(s.nextToken(), "Ç");
+						while (st.hasMoreTokens()) {
+							dibujo.getPuertas()
+									.add(new Puerta(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
+											Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
+											dibujo.buscarId(Integer.parseInt(st.nextToken())),
+											dibujo.buscarId(Integer.parseInt(st.nextToken()))));
+						}
+					}
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(this, "Archivo no válido", "Error", JOptionPane.ERROR_MESSAGE);
 					dibujo.setEscala(escalaBackup);
 					dibujo.setPiso(pisoBackup);
+					ex.printStackTrace();
 				}
 			}
 		} else if (origen == "Guardar") {
@@ -142,19 +153,30 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					export += "|";
 				}
 				export += "$";
-				ListIterator<Trayectoria> ite = dibujo.getTrayectorias().listIterator();
-				if (!ite.hasNext()) {
+				ListIterator<Trayectoria> it = dibujo.getTrayectorias().listIterator();
+				if (!it.hasNext()) {
 					export += "!";
 				} else {
-					while (ite.hasNext()) {
-						Trayectoria t = ite.next();
-						ListIterator<Camino> iter = t.getCamino().listIterator();
-						while (iter.hasNext()) {
-							Camino c = iter.next();
+					while (it.hasNext()) {
+						Trayectoria t = it.next();
+						ListIterator<Camino> ite = t.getCamino().listIterator();
+						while (ite.hasNext()) {
+							Camino c = ite.next();
 							Point p = c.getPunto();
 							export += c.getHabitacion().getId() + "Ç" + (int) p.getX() + "Ç" + (int) p.getY() + "Ç";
 						}
 						export += "%";
+					}
+				}
+				export += "$";
+				ListIterator<Puerta> ite = dibujo.getPuertas().listIterator();
+				if (!ite.hasNext()) {
+					export += "!";
+				} else {
+					while (ite.hasNext()) {
+						Puerta p = ite.next();
+						export += p.toString();
+						export += "Ç";
 					}
 				}
 				try {

@@ -7,11 +7,10 @@ import java.util.List;
 public class Habitacion extends Superficie {
 
 	private static int idActual = 1;
-	private int id;
-	private double lado;
+	private int id, lado;
 	private List<Baldosa> baldosas;
 
-	public Habitacion(double x, double y, double largo, double alto) {
+	public Habitacion(int x, int y, int largo, int alto) {
 		super(x, y, largo, alto);
 		id = idActual++;
 	}
@@ -55,9 +54,9 @@ public class Habitacion extends Superficie {
 		List<Point> noPasar = getNoPasar();
 		this.baldosas = new ArrayList<Baldosa>();
 		int columna = 1;
-		for (double i = x; i < x + largo; i += lado) {
+		for (int i = x; i < x + largo; i += lado) {
 			int fila = 1;
-			for (double j = y; j < y + alto; j += lado) {
+			for (int j = y; j < y + alto; j += lado) {
 				Baldosa b = new Baldosa(i, j, Math.min(x + largo - i, lado), Math.min(y + alto - j, lado), fila,
 						columna);
 				if (noPasar.contains(b.getCoordenadas())) {
@@ -137,11 +136,11 @@ public class Habitacion extends Superficie {
 		this.baldosas = baldosas;
 	}
 
-	public double getLado() {
+	public int getLado() {
 		return lado;
 	}
 
-	public void setLado(double lado) {
+	public void setLado(int lado) {
 		this.lado = lado;
 	}
 
