@@ -75,32 +75,21 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 		}
 	}
 
-	private JMenu agregarMenu(String texto, int atajo) {
-		JMenu menu = new JMenu(texto);
-		menu.setMnemonic(atajo);
-		return menu;
-	}
-
-	private JMenuItem agregarItem(String texto, int atajo) {
+	private JMenuItem agregarItem(String texto) {
 		JMenuItem item = new JMenuItem(texto);
-		item.setAccelerator(KeyStroke.getKeyStroke(atajo, ActionEvent.ALT_MASK));
 		item.addActionListener(this);
 		return item;
 	}
 
 	private JMenuBar barraMenu() {
 		JMenuBar barra = new JMenuBar();
-		JMenu menuArchivo = agregarMenu("Archivo", KeyEvent.VK_A);
-		JMenu menuEditar = agregarMenu("Editar", KeyEvent.VK_E);
-		barra.add(menuArchivo);
-		barra.add(menuEditar);
-		menuArchivo.add(agregarItem("Nuevo", KeyEvent.VK_1));
-		menuArchivo.add(agregarItem("Abrir", KeyEvent.VK_2));
-		menuArchivo.add(agregarItem("Guardar", KeyEvent.VK_3));
-		menuArchivo.add(agregarItem("Guardar como", KeyEvent.VK_4));
-		menuArchivo.add(agregarItem("Exportar", KeyEvent.VK_5));
-		menuEditar.add(agregarItem("Cambiar escala", KeyEvent.VK_6));
-		menuEditar.add(agregarItem("Cambiar orientación", KeyEvent.VK_7));
+		barra.add(agregarItem("Nuevo"));
+		barra.add(agregarItem("Abrir"));
+		barra.add(agregarItem("Guardar"));
+		barra.add(agregarItem("Guardar como"));
+		barra.add(agregarItem("Exportar"));
+		barra.add(agregarItem("Escala"));
+		barra.add(agregarItem("Orientación"));
 		return barra;
 	}
 
