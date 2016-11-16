@@ -2,9 +2,6 @@ import java.awt.BorderLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,19 +10,90 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ListIterator;
 import java.util.StringTokenizer;
-import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.imageio.ImageIO;
 import javax.swing.JMenuBar;
-import javax.swing.KeyStroke;
 import javax.swing.JFrame;
 
-public class FrameDemo extends JFrame implements ActionListener, ItemListener {
+public class FrameDemo extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	private Dibujo dibujo = new Dibujo();
 	private String nombre = null;
+
+	private void abrir() {
+		if (nombre != null) {
+			Piso piso = dibujo.getPiso();
+			String escalaBackup = dibujo.getEscala();
+			int orientacionBackup = dibujo.getOrientacion();
+			Camino origBackup = dibujo.getOrig();
+			Point trayPBackup = dibujo.getTrayP();
+			Habitacion trayHBackup = dibujo.getTrayH();
+			Habitacion actualBackup = dibujo.getActual();
+			try {
+				dibujo.eliminar();
+				BufferedReader br = new BufferedReader(new FileReader(nombre));
+				String line = br.readLine();
+				br.close();
+				StringTokenizer s = new StringTokenizer(line, "$");
+				StringTokenizer st = new StringTokenizer(s.nextToken(), "|");
+				dibujo.setEscala(st.nextToken());
+				dibujo.setOrientacion(Integer.parseInt(st.nextToken()));
+				while (st.hasMoreTokens()) {
+					Habitacion.setIdActual(Integer.parseInt(st.nextToken()));
+					Habitacion h = new Habitacion(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
+							Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
+					h.setLado(Integer.parseInt(st.nextToken()));
+					h.generarBaldosas();
+					dibujo.getPiso().getHabitaciones().add(h);
+					StringTokenizer to = new StringTokenizer(st.nextToken(), "&");
+					if (to.countTokens() > 1) {
+						while (to.hasMoreTokens()) {
+							h.obtenerBaldosa(Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()))
+									.cambiarPasar();
+						}
+					}
+				}
+				if (s.hasMoreTokens()) {
+					st = new StringTokenizer(s.nextToken(), "%");
+					while (st.hasMoreTokens()) {
+						StringTokenizer to = new StringTokenizer(st.nextToken(), "Ç");
+						if (to.countTokens() > 1) {
+							Trayectoria t = new Trayectoria();
+							while (to.hasMoreTokens()) {
+								t.agregarBaldosa(dibujo.getPiso().buscarId(Integer.parseInt(to.nextToken())),
+										Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()));
+							}
+							dibujo.getPiso().getTrayectorias().add(t);
+						}
+					}
+				}
+				if (s.hasMoreTokens()) {
+					st = new StringTokenizer(s.nextToken(), "Ç");
+					while (st.hasMoreTokens()) {
+						dibujo.getPiso().agregarPuerta(Integer.parseInt(st.nextToken()),
+								Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
+								Integer.parseInt(st.nextToken()),
+								dibujo.getPiso().buscarId(Integer.parseInt(st.nextToken())),
+								dibujo.getPiso().buscarId(Integer.parseInt(st.nextToken())));
+					}
+				}
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(this, "Archivo no válido", "Error", JOptionPane.ERROR_MESSAGE);
+				dibujo.setEscala(escalaBackup);
+				try {
+					dibujo.setOrientacion(orientacionBackup);
+				} catch (Exception ex) {
+				}
+				dibujo.setPiso(piso);
+				dibujo.setTrayP(trayPBackup);
+				dibujo.setTrayH(trayHBackup);
+				dibujo.setOrig(origBackup);
+				dibujo.setActual(actualBackup);
+			}
+		}
+	}
 
 	private void guardar() {
 		if (nombre != null) {
@@ -69,7 +137,7 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 			}
 			try {
 				Files.write(Paths.get(nombre), export.substring(0, export.length() - 1).getBytes());
-			} catch (Exception ex) {
+			} catch (Exception e) {
 				JOptionPane.showMessageDialog(this, "Acceso denegado", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -99,77 +167,7 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 			dibujo.eliminar();
 		} else if (origen == "Abrir") {
 			nombre = Archivo.abrir(".txt");
-			if (nombre != null) {
-				Piso piso = dibujo.getPiso();
-				String escalaBackup = dibujo.getEscala();
-				int orientacionBackup = dibujo.getOrientacion();
-				Camino origBackup = dibujo.getOrig();
-				Point trayPBackup = dibujo.getTrayP();
-				Habitacion trayHBackup = dibujo.getTrayH();
-				Habitacion actualBackup = dibujo.getActual();
-				try {
-					dibujo.eliminar();
-					BufferedReader br = new BufferedReader(new FileReader(nombre));
-					String line = br.readLine();
-					br.close();
-					StringTokenizer s = new StringTokenizer(line, "$");
-					StringTokenizer st = new StringTokenizer(s.nextToken(), "|");
-					dibujo.setEscala(st.nextToken());
-					dibujo.setOrientacion(Integer.parseInt(st.nextToken()));
-					while (st.hasMoreTokens()) {
-						Habitacion.setIdActual(Integer.parseInt(st.nextToken()));
-						Habitacion h = new Habitacion(Integer.parseInt(st.nextToken()),
-								Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
-								Integer.parseInt(st.nextToken()));
-						h.setLado(Integer.parseInt(st.nextToken()));
-						h.generarBaldosas();
-						dibujo.getPiso().getHabitaciones().add(h);
-						StringTokenizer to = new StringTokenizer(st.nextToken(), "&");
-						if (to.countTokens() > 1) {
-							while (to.hasMoreTokens()) {
-								h.obtenerBaldosa(Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()))
-										.cambiarPasar();
-							}
-						}
-					}
-					if (s.hasMoreTokens()) {
-						st = new StringTokenizer(s.nextToken(), "%");
-						while (st.hasMoreTokens()) {
-							StringTokenizer to = new StringTokenizer(st.nextToken(), "Ç");
-							if (to.countTokens() > 1) {
-								Trayectoria t = new Trayectoria();
-								while (to.hasMoreTokens()) {
-									t.agregarBaldosa(dibujo.getPiso().buscarId(Integer.parseInt(to.nextToken())),
-											Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()));
-								}
-								dibujo.getPiso().getTrayectorias().add(t);
-							}
-						}
-					}
-					if (s.hasMoreTokens()) {
-						st = new StringTokenizer(s.nextToken(), "Ç");
-						while (st.hasMoreTokens()) {
-							dibujo.getPiso().agregarPuerta(Integer.parseInt(st.nextToken()),
-									Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
-									Integer.parseInt(st.nextToken()),
-									dibujo.getPiso().buscarId(Integer.parseInt(st.nextToken())),
-									dibujo.getPiso().buscarId(Integer.parseInt(st.nextToken())));
-						}
-					}
-				} catch (Exception ex) {
-					JOptionPane.showMessageDialog(this, "Archivo no válido", "Error", JOptionPane.ERROR_MESSAGE);
-					dibujo.setEscala(escalaBackup);
-					try {
-						dibujo.setOrientacion(orientacionBackup);
-					} catch (Exception exc) {
-					}
-					dibujo.setPiso(piso);
-					dibujo.setTrayP(trayPBackup);
-					dibujo.setTrayH(trayHBackup);
-					dibujo.setOrig(origBackup);
-					dibujo.setActual(actualBackup);
-				}
-			}
+			abrir();
 		} else if (origen == "Guardar") {
 			if (nombre == null) {
 				nombre = Archivo.guardar(".txt");
@@ -204,9 +202,6 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 			}
 		}
 		dibujo.repaint();
-	}
-
-	public void itemStateChanged(ItemEvent e) {
 	}
 
 	public FrameDemo() {
