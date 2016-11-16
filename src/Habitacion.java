@@ -56,8 +56,30 @@ public class Habitacion extends Superficie {
 		}
 	}
 
+	public boolean intersecta(Rectangle2D r) {
+		Area a = new Area(getColision());
+		a.intersect(new Area(r));
+		return !a.isEmpty();
+	}
+
 	Rectangle2D getColision() {
-		return new Rectangle2D.Double(x, y, largo + 1, alto + 1);
+		return new Rectangle2D.Float(x, y, largo + 1, alto + 1);
+	}
+
+	public Rectangle2D bordeIzq() {
+		return new Rectangle2D.Float(x, y, 1, alto);
+	}
+
+	public Rectangle2D bordeDer() {
+		return new Rectangle2D.Float(x + largo, y, 1, alto);
+	}
+
+	public Rectangle2D bordeArr() {
+		return new Rectangle2D.Float(x, y, largo, 1);
+	}
+
+	public Rectangle2D bordeAba() {
+		return new Rectangle2D.Float(x, y + alto, largo, 1);
 	}
 
 	public void generarBaldosas() {

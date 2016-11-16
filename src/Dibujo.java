@@ -28,6 +28,14 @@ class Dibujo extends JComponent {
 	private Puerta pTemp = null;
 	private String escala = "5m";
 
+	private boolean contienePuertaV(Habitacion h1, Habitacion h2, MouseEvent e) {
+		return h1.contiene(e.getX() - 3, e.getY() - 1) && h2.contiene(e.getX() + 3, e.getY() - 1);
+	}
+
+	private boolean contienePuertaH(Habitacion h1, Habitacion h2, MouseEvent e) {
+		return h1.contiene(e.getX() - 1, e.getY() - 3) && h2.contiene(e.getX() - 1, e.getY() + 3);
+	}
+
 	public Dibujo() {
 
 		this.setFocusable(true);
@@ -79,11 +87,9 @@ class Dibujo extends JComponent {
 					} else if (l.size() == 2 && p == null) {
 						Habitacion h1 = l.get(0);
 						Habitacion h2 = l.get(1);
-						if (h1.contiene(e.getX() - 3, e.getY() - 1) && h2.contiene(e.getX() + 3, e.getY() - 1)
-								|| h1.contiene(e.getX() + 3, e.getY() - 1) && h2.contiene(e.getX() - 3, e.getY() - 1)) {
+						if (contienePuertaV(h1, h2, e) || contienePuertaV(h2, h1, e)) {
 							piso.agregarPuerta(e.getX() - 3, e.getY(), 7, 30, h1, h2);
-						} else if (h1.contiene(e.getX() - 1, e.getY() - 3) && h2.contiene(e.getX() - 1, e.getY() + 3)
-								|| h1.contiene(e.getX() - 1, e.getY() + 3) && h2.contiene(e.getX() - 1, e.getY() - 3)) {
+						} else if (contienePuertaH(h1, h2, e) || contienePuertaH(h2, h1, e)) {
 							piso.agregarPuerta(e.getX(), e.getY() - 3, 30, 7, h1, h2);
 						}
 					}
@@ -156,11 +162,9 @@ class Dibujo extends JComponent {
 				if (l.size() == 2) {
 					Habitacion h1 = l.get(0);
 					Habitacion h2 = l.get(1);
-					if (h1.contiene(e.getX() - 3, e.getY() - 1) && h2.contiene(e.getX() + 3, e.getY() - 1)
-							|| h1.contiene(e.getX() + 3, e.getY() - 1) && h2.contiene(e.getX() - 3, e.getY() - 1)) {
+					if (contienePuertaV(h1, h2, e) || contienePuertaV(h2, h1, e)) {
 						pTemp = new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2);
-					} else if (h1.contiene(e.getX() - 1, e.getY() - 3) && h2.contiene(e.getX() - 1, e.getY() + 3)
-							|| h1.contiene(e.getX() - 1, e.getY() + 3) && h2.contiene(e.getX() - 1, e.getY() - 3)) {
+					} else if (contienePuertaH(h1, h2, e) || contienePuertaH(h2, h1, e)) {
 						pTemp = new Puerta(e.getX(), e.getY() - 3, 30, 7, h1, h2);
 					}
 				} else {
@@ -197,22 +201,14 @@ class Dibujo extends JComponent {
 							actual.setAlto(y);
 							if (l.size() > 0) {
 								for (Habitacion h : l) {
-									if (actual.contiene(h.getX(), actual.getY() + actual.getAlto())
-											&& !actual.contiene(actual.getX() + actual.getLargo(), h.getY())) {
+									if (actual.intersecta(h.bordeIzq())
+											&& (!actual.intersecta(h.bordeArr()) || actual.getX() + actual.getLargo()
+													- h.getX() < actual.getY() + actual.getAlto() - h.getY())) {
 										actual.setLargo(h.getX() - actual.getX());
-									} else if (actual.contiene(actual.getX() + actual.getLargo(), h.getY())
-											&& !actual.contiene(h.getX(), actual.getY() + actual.getAlto())) {
+									} else if (actual.intersecta(h.bordeArr())
+											&& (!actual.intersecta(h.bordeIzq()) || actual.getX() + actual.getLargo()
+													- h.getX() >= actual.getY() + actual.getAlto() - h.getY())) {
 										actual.setAlto(h.getY() - actual.getY());
-									} else if (actual.contiene(actual.getX() + actual.getLargo(), h.getY())
-											&& actual.contiene(h.getX(), actual.getY() + actual.getAlto())
-											&& actual.getX() + actual.getLargo() - h.getX() >= actual.getY()
-													+ actual.getAlto() - h.getY()) {
-										actual.setAlto(h.getY() - actual.getY());
-									} else if (actual.contiene(h.getX(), actual.getY() + actual.getAlto())
-											&& actual.contiene(actual.getX() + actual.getLargo(), h.getY())
-											&& actual.getX() + actual.getLargo() - h.getX() < actual.getY()
-													+ actual.getAlto() - h.getY()) {
-										actual.setLargo(h.getX() - actual.getX());
 									}
 								}
 							}
@@ -229,34 +225,22 @@ class Dibujo extends JComponent {
 								boolean chocoY = false;
 								for (Habitacion h : l) {
 									if (!chocoX) {
-										if (actual.getX() >= h.getX() + h.getLargo()) {
+										if (actual.intersecta(h.bordeDer())) {
 											actual.setX(Math.max(h.getX() + h.getLargo(), x));
 											chocoX = true;
-										} else if (actual.getX() + actual.getLargo() <= h.getX()) {
+										} else if (actual.intersecta(h.bordeIzq())) {
 											actual.setX(Math.min(h.getX() - actual.getLargo(), x));
-											chocoX = true;
-										} else if (actual.getX() >= h.getX() && actual.getX() <= h.getX() + h.getLargo()
-												&& actual.getY() >= h.getY() && actual.getY() <= h.getY() + h.getAlto()
-												&& actual.getX() + actual.getLargo() - h.getX() >= actual.getY()
-														+ actual.getAlto() - h.getY()) {
-											actual.setX(x);
 											chocoX = true;
 										} else {
 											actual.setX(x);
 										}
 									}
 									if (!chocoY) {
-										if (actual.getY() >= h.getY() + h.getAlto()) {
+										if (actual.intersecta(h.bordeAba())) {
 											actual.setY(Math.max(h.getY() + h.getAlto(), y));
 											chocoY = true;
-										} else if (actual.getY() + actual.getAlto() <= h.getY()) {
+										} else if (actual.intersecta(h.bordeArr())) {
 											actual.setY(Math.min(h.getY() - actual.getAlto(), y));
-											chocoY = true;
-										} else if (actual.getY() >= h.getY() && actual.getY() <= h.getY() + h.getAlto()
-												&& actual.getX() >= h.getX() && actual.getX() <= h.getX() + h.getLargo()
-												&& actual.getX() + actual.getLargo() - h.getX() < actual.getY()
-														+ actual.getAlto() - h.getY()) {
-											actual.setY(h.getY() + h.getAlto());
 											chocoY = true;
 										} else {
 											actual.setY(y);
