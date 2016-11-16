@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JComponent;
@@ -308,13 +309,20 @@ class Dibujo extends JComponent {
 			g2.setPaint(Color.BLACK);
 			g2.draw(h.getForma());
 		}
+		Set<Trayectoria> tr = new HashSet<Trayectoria>();
 		for (Trayectoria t : piso.getTrayectorias()) {
 			g2.setPaint(colores[col += (col == 7) ? -7 : 1]);
 			for (Camino c : t.getCamino()) {
 				Point p = c.getPunto();
-				g2.fill(c.getHabitacion().obtenerBaldosa(p.getX(), p.getY()).getInterior());
+				Baldosa b = c.getHabitacion().obtenerBaldosa(p.getX(), p.getY());
+				if (b != null) {
+					g2.fill(b.getInterior());
+				} else {
+					tr.add(t);
+				}
 			}
 		}
+		piso.getTrayectorias().removeAll(tr);
 		if (trayP != null) {
 			g2.setPaint(new Color(192, 192, 192, 128));
 			for (Habitacion h : piso.getHabitaciones()) {
