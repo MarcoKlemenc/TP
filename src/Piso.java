@@ -23,23 +23,23 @@ public class Piso {
 	}
 
 	public void eliminarHabitacion(Habitacion h) {
-		Iterator<Puerta> i = puertas.listIterator();
-		while (i.hasNext()) {
-			Puerta p = i.next();
+		List<Puerta> pp = new ArrayList<Puerta>();
+		for (Puerta p : puertas) {
 			if (p.getH1() == h || p.getH2() == h) {
-				puertas.remove(p);
+				pp.add(p);
 			}
 		}
 		for (Set<Habitacion> s : adyacencias.values()) {
 			s.remove(h);
 		}
-		Iterator<Trayectoria> it = trayectorias.listIterator();
-		while (it.hasNext()) {
-			Trayectoria t = it.next();
+		List<Trayectoria> tt = new ArrayList<Trayectoria>();
+		for (Trayectoria t : trayectorias) {
 			if (t.getHabitaciones().contains(h)) {
-				trayectorias.remove(t);
+				tt.add(t);
 			}
 		}
+		puertas.removeAll(pp);
+		trayectorias.removeAll(tt);
 		adyacencias.remove(h);
 		habitaciones.remove(h);
 	}

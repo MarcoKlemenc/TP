@@ -12,7 +12,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 
 class Dibujo extends JComponent {
 
@@ -24,6 +23,7 @@ class Dibujo extends JComponent {
 	private Camino orig, dest;
 	private Puerta pTemp, pActual;
 	private String escala = "5m";
+	private boolean obstaculo;
 
 	public Dibujo() {
 
@@ -33,19 +33,27 @@ class Dibujo extends JComponent {
 
 			public void mouseClicked(MouseEvent e) {
 				List<Habitacion> l = piso.contiene(e);
-				if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e) && l.size() == 1) {
+				if (e.getClickCount() == 2 && l.size() == 1) {
 					seleccionada = l.get(0);
+					orig = null;
+					trayP = null;
+					trayH = null;
+				} else if (e.getClickCount() == 2 && l.size() == 0) {
+					obstaculo ^= true;
 				} else {
+					if (seleccionada != null && l.size() == 1 && l.get(0) == seleccionada) {
+						piso.eliminarHabitacion(l.get(0));
+					}
 					seleccionada = null;
-					if (SwingUtilities.isLeftMouseButton(e)) {
-						Puerta p = piso.contieneP(e);
-						if (p != null) {
-							piso.eliminarPuerta(p);
-						} else if (pTemp != null) {
-							piso.agregarPuerta(pTemp);
-						} else if (l.size() == 1) {
-							actual = l.get(0);
-							Baldosa b = actual.contieneB2(e);
+					Puerta p = piso.contieneP(e);
+					if (p != null) {
+						piso.eliminarPuerta(p);
+					} else if (pTemp != null) {
+						piso.agregarPuerta(pTemp);
+					} else if (l.size() == 1) {
+						actual = l.get(0);
+						Baldosa b = actual.contieneB2(e);
+						if (!obstaculo) {
 							if (orig != null && dest == null) {
 								dest = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
 								if (!orig.equals(dest)) {
@@ -63,6 +71,8 @@ class Dibujo extends JComponent {
 								trayH = actual;
 							}
 							dest = null;
+						} else {
+							b.cambiarPasar();
 						}
 					}
 				}
@@ -70,33 +80,24 @@ class Dibujo extends JComponent {
 
 			public void mousePressed(MouseEvent e) {
 				List<Habitacion> l = piso.contiene(e);
-				if (SwingUtilities.isLeftMouseButton(e)) {
-					pActual = piso.contieneP(e);
-					if (pActual == null) {
-						if (l.size() == 1) {
-							actual = l.get(0);
-							desvioX = e.getX() - actual.getX();
-							desvioY = e.getY() - actual.getY();
-						} else if (l.size() == 0) {
-							inicio = new Point(e.getX(), e.getY());
-						}
-					}
-				} else if (SwingUtilities.isRightMouseButton(e)) {
-					if (l.size() == 1) {
-						piso.eliminarHabitacion(l.get(0));
-					}
-				} else if (SwingUtilities.isMiddleMouseButton(e)) {
+				if (!(l.size() == 1) || !(l.get(0) == seleccionada)) {
+					seleccionada = null;
+				}
+				pActual = piso.contieneP(e);
+				if (pActual == null) {
 					if (l.size() == 1) {
 						actual = l.get(0);
-						actual.contieneB2(e).cambiarPasar();
+						desvioX = e.getX() - actual.getX();
+						desvioY = e.getY() - actual.getY();
+					} else if (l.size() == 0) {
+						inicio = new Point(e.getX(), e.getY());
 					}
 				}
 				repaint();
 			}
 
 			public void mouseReleased(MouseEvent e) {
-				if (SwingUtilities.isLeftMouseButton(e) && actual == null && temp != null && temp.getLargo() >= 2
-						&& temp.getAlto() >= 2) {
+				if (actual == null && temp != null && temp.getLargo() >= 2 && temp.getAlto() >= 2) {
 					Habitacion h = new Habitacion(temp.getX(), temp.getY(), temp.getLargo(), temp.getAlto());
 					if (piso.cruza(h).size() == 0) {
 						piso.getHabitaciones().add(h);
@@ -137,82 +138,79 @@ class Dibujo extends JComponent {
 			}
 
 			public void mouseDragged(MouseEvent e) {
-				if (SwingUtilities.isLeftMouseButton(e)) {
-
-					if (pActual != null) {
-						pActual.setAlto(e.getY() - pActual.getY());
+				if (pActual != null) {
+					pActual.setAlto(e.getY() - pActual.getY());
+				}
+				if (actual == null) {
+					fin = new Point(e.getX(), e.getY());
+				} else {
+					for (Puerta pu : piso.getPuertas()) {
+						if ((pu.getH1() == actual || pu.getH2() == actual)) {
+							actual = null;
+							return;
+						}
 					}
-					if (actual == null) {
-						fin = new Point(e.getX(), e.getY());
+					int x = e.getX() - actual.getX();
+					int y = e.getY() - actual.getY();
+					List<Habitacion> l = piso.cruza(actual);
+					if (seleccionada != null) {
+						if (actual.getLargo() <= 2 || actual.getAlto() <= 2) {
+							piso.getHabitaciones().remove(actual);
+							repaint();
+							return;
+						}
+						actual.setLargo(x);
+						actual.setAlto(y);
+						if (l.size() > 0) {
+							for (Habitacion h : l) {
+								if (actual.intersecta(h.bordeIzq())
+										&& (!actual.intersecta(h.bordeArr()) || actual.getX() + actual.getLargo()
+												- h.getX() < actual.getY() + actual.getAlto() - h.getY())) {
+									actual.setLargo(h.getX() - actual.getX());
+								} else if (actual.intersecta(h.bordeArr())
+										&& (!actual.intersecta(h.bordeIzq()) || actual.getX() + actual.getLargo()
+												- h.getX() >= actual.getY() + actual.getAlto() - h.getY())) {
+									actual.setAlto(h.getY() - actual.getY());
+								}
+							}
+						}
 					} else {
-						for (Puerta pu : piso.getPuertas()) {
-							if ((pu.getH1() == actual || pu.getH2() == actual)) {
-								actual = null;
-								return;
-							}
-						}
-						int x = e.getX() - actual.getX();
-						int y = e.getY() - actual.getY();
-						List<Habitacion> l = piso.cruza(actual);
-						if (seleccionada != null) {
-							if (actual.getLargo() <= 2 || actual.getAlto() <= 2) {
-								piso.getHabitaciones().remove(actual);
-								repaint();
-								return;
-							}
-							actual.setLargo(x);
-							actual.setAlto(y);
-							if (l.size() > 0) {
-								for (Habitacion h : l) {
-									if (actual.intersecta(h.bordeIzq())
-											&& (!actual.intersecta(h.bordeArr()) || actual.getX() + actual.getLargo()
-													- h.getX() < actual.getY() + actual.getAlto() - h.getY())) {
-										actual.setLargo(h.getX() - actual.getX());
-									} else if (actual.intersecta(h.bordeArr())
-											&& (!actual.intersecta(h.bordeIzq()) || actual.getX() + actual.getLargo()
-													- h.getX() >= actual.getY() + actual.getAlto() - h.getY())) {
-										actual.setAlto(h.getY() - actual.getY());
-									}
-								}
-							}
+						x = e.getX() - desvioX;
+						y = e.getY() - desvioY;
+						if (l.size() == 0) {
+							actual.setX(x);
+							actual.setY(y);
 						} else {
-							x = e.getX() - desvioX;
-							y = e.getY() - desvioY;
-							if (l.size() == 0) {
-								actual.setX(x);
-								actual.setY(y);
-							} else {
-								boolean chocoX = false;
-								boolean chocoY = false;
-								for (Habitacion h : l) {
-									if (!chocoX) {
-										if (actual.intersecta(h.bordeDer())) {
-											actual.setX(Math.max(h.getX() + h.getLargo(), x));
-											chocoX = true;
-										} else if (actual.intersecta(h.bordeIzq())) {
-											actual.setX(Math.min(h.getX() - actual.getLargo(), x));
-											chocoX = true;
-										} else {
-											actual.setX(x);
-										}
+							boolean chocoX = false;
+							boolean chocoY = false;
+							for (Habitacion h : l) {
+								if (!chocoX) {
+									if (actual.intersecta(h.bordeDer())) {
+										actual.setX(Math.max(h.getX() + h.getLargo(), x));
+										chocoX = true;
+									} else if (actual.intersecta(h.bordeIzq())) {
+										actual.setX(Math.min(h.getX() - actual.getLargo(), x));
+										chocoX = true;
+									} else {
+										actual.setX(x);
 									}
-									if (!chocoY) {
-										if (actual.intersecta(h.bordeAba())) {
-											actual.setY(Math.max(h.getY() + h.getAlto(), y));
-											chocoY = true;
-										} else if (actual.intersecta(h.bordeArr())) {
-											actual.setY(Math.min(h.getY() - actual.getAlto(), y));
-											chocoY = true;
-										} else {
-											actual.setY(y);
-										}
+								}
+								if (!chocoY) {
+									if (actual.intersecta(h.bordeAba())) {
+										actual.setY(Math.max(h.getY() + h.getAlto(), y));
+										chocoY = true;
+									} else if (actual.intersecta(h.bordeArr())) {
+										actual.setY(Math.min(h.getY() - actual.getAlto(), y));
+										chocoY = true;
+									} else {
+										actual.setY(y);
 									}
 								}
 							}
-
 						}
-						actual.generarBaldosas();
+
 					}
+					actual.generarBaldosas();
 				}
 				repaint();
 			}
