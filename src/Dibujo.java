@@ -27,14 +27,6 @@ class Dibujo extends JComponent {
 	private Puerta pTemp = null;
 	private String escala = "5m";
 
-	private boolean contienePuertaV(Habitacion h1, Habitacion h2, MouseEvent e) {
-		return h1.contiene(e.getX() - 3, e.getY() - 1) && h2.contiene(e.getX() + 3, e.getY() - 1);
-	}
-
-	private boolean contienePuertaH(Habitacion h1, Habitacion h2, MouseEvent e) {
-		return h1.contiene(e.getX() - 1, e.getY() - 3) && h2.contiene(e.getX() - 1, e.getY() + 3);
-	}
-
 	public Dibujo() {
 
 		this.setFocusable(true);
@@ -61,9 +53,9 @@ class Dibujo extends JComponent {
 					Puerta p = piso.contieneP(e);
 					if (p != null) {
 						piso.eliminarPuerta(p);
-						return;
-					}
-					if (l.size() == 1) {
+					} else if (pTemp != null) {
+						piso.agregarPuerta(pTemp);
+					} else if (l.size() == 1) {
 						actual = l.get(0);
 						Baldosa b = actual.contieneB2(e);
 						if (orig != null && dest == null) {
@@ -83,14 +75,6 @@ class Dibujo extends JComponent {
 							trayH = actual;
 						}
 						dest = null;
-					} else if (l.size() == 2 && p == null) {
-						Habitacion h1 = l.get(0);
-						Habitacion h2 = l.get(1);
-						if (contienePuertaV(h1, h2, e) || contienePuertaV(h2, h1, e)) {
-							piso.agregarPuerta(e.getX() - 3, e.getY(), 7, 30, h1, h2);
-						} else if (contienePuertaH(h1, h2, e) || contienePuertaH(h2, h1, e)) {
-							piso.agregarPuerta(e.getX(), e.getY() - 3, 30, 7, h1, h2);
-						}
 					}
 				}
 			}
@@ -138,17 +122,19 @@ class Dibujo extends JComponent {
 		this.addMouseMotionListener(new MouseMotionAdapter() {
 
 			public void mouseMoved(MouseEvent e) {
-				List<Habitacion> l = piso.contiene(e);
-				if (l.size() == 2) {
-					Habitacion h1 = l.get(0);
-					Habitacion h2 = l.get(1);
-					if (contienePuertaV(h1, h2, e) || contienePuertaV(h2, h1, e)) {
-						pTemp = new Puerta(e.getX() - 3, e.getY(), 7, 30, h1, h2);
-					} else if (contienePuertaH(h1, h2, e) || contienePuertaH(h2, h1, e)) {
-						pTemp = new Puerta(e.getX(), e.getY() - 3, 30, 7, h1, h2);
+				pTemp = null;
+				for (Habitacion h1 : piso.getHabitaciones()) {
+					for (Habitacion h2 : piso.getHabitaciones()) {
+						if (piso.contienePuertaV(h1, h2, e) || piso.contienePuertaV(h2, h1, e)) {
+							int x = Math.min(h1.getX(), h2.getX());
+							int largo = Math.min(h1.getX(), h2.getX()) == h1.getX() ? h1.getLargo() : h2.getLargo();
+							pTemp = new Puerta(x + largo - 3, e.getY(), 7, 30, h1, h2);
+						} else if (piso.contienePuertaH(h1, h2, e) || piso.contienePuertaH(h2, h1, e)) {
+							int y = Math.min(h1.getY(), h2.getY());
+							int alto = Math.min(h1.getY(), h2.getY()) == h1.getY() ? h1.getAlto() : h2.getAlto();
+							pTemp = new Puerta(e.getX(), y + alto - 3, 30, 7, h1, h2);
+						}
 					}
-				} else {
-					pTemp = null;
 				}
 				repaint();
 			}

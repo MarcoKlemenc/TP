@@ -14,6 +14,14 @@ public class Piso {
 	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
 	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
 
+	public boolean contienePuertaV(Habitacion h1, Habitacion h2, MouseEvent e) {
+		return h1 != h2 && h1.contiene(e.getX() - 3, e.getY() - 1) && h2.contiene(e.getX() + 3, e.getY() - 1);
+	}
+
+	public boolean contienePuertaH(Habitacion h1, Habitacion h2, MouseEvent e) {
+		return h1 != h2 && h1.contiene(e.getX() - 1, e.getY() - 3) && h2.contiene(e.getX() - 1, e.getY() + 3);
+	}
+
 	public void eliminarHabitacion(Habitacion h) {
 		Iterator<Puerta> i = puertas.listIterator();
 		while (i.hasNext()) {
@@ -121,7 +129,13 @@ public class Piso {
 	}
 
 	public void agregarPuerta(int x, int y, int largo, int alto, Habitacion h1, Habitacion h2) {
-		puertas.add(new Puerta(x, y, largo, alto, h1, h2));
+		agregarPuerta(new Puerta(x, y, largo, alto, h1, h2));
+	}
+
+	public void agregarPuerta(Puerta p) {
+		puertas.add(p);
+		Habitacion h1 = p.getH1();
+		Habitacion h2 = p.getH2();
 		if (!adyacencias.containsKey(h1)) {
 			adyacencias.put(h1, new HashSet<Habitacion>());
 		}
@@ -188,32 +202,16 @@ public class Piso {
 		return habitaciones;
 	}
 
-	public void setHabitaciones(List<Habitacion> habitaciones) {
-		this.habitaciones = habitaciones;
-	}
-
 	public List<Puerta> getPuertas() {
 		return puertas;
-	}
-
-	public void setPuertas(List<Puerta> puertas) {
-		this.puertas = puertas;
 	}
 
 	public List<Trayectoria> getTrayectorias() {
 		return trayectorias;
 	}
 
-	public void setTrayectorias(List<Trayectoria> trayectorias) {
-		this.trayectorias = trayectorias;
-	}
-
 	public Map<Habitacion, Set<Habitacion>> getAdyacencias() {
 		return adyacencias;
-	}
-
-	public void setAdyacencias(Map<Habitacion, Set<Habitacion>> adyacencias) {
-		this.adyacencias = adyacencias;
 	}
 
 }
