@@ -180,4 +180,8 @@ public class Habitacion extends Superficie {
 		Habitacion.idActual = idActual;
 	}
 
+	public String toString() {
+		return id + "|" + x + "|" + y + "|" + largo + "|" + alto + "|" + lado + "|";
+	}
+
 }

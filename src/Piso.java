@@ -60,14 +60,12 @@ public class Piso {
 			for (Puerta p : puertas) {
 				if (p.getH1() == h1 && p.getH2() == h2 || p.getH1() == h2 && p.getH2() == h1) {
 					for (Baldosa b : h1.getBaldosas()) {
-						if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
-								|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
+						if (b.contienePuerta(p)) {
 							t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), b.getFila(), b.getColumna());
 						}
 					}
 					for (Baldosa b : h2.getBaldosas()) {
-						if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
-								|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
+						if (b.contienePuerta(p)) {
 							t.anexar(h2.generarTrayectoria(b.getFila(), b.getColumna(), dest.getFila(),
 									dest.getColumna()));
 						}
@@ -89,15 +87,13 @@ public class Piso {
 				for (Puerta p : puertas) {
 					if (p.getH1() == h1 && p.getH2() == h3 || p.getH1() == h3 && p.getH2() == h1) {
 						for (Baldosa b : h1.getBaldosas()) {
-							if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
-									|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
+							if (b.contienePuerta(p)) {
 								t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), b.getFila(),
 										b.getColumna());
 							}
 						}
 						for (Baldosa b : h3.getBaldosas()) {
-							if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
-									|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
+							if (b.contienePuerta(p)) {
 								inicioTemp = b;
 							}
 						}
@@ -106,15 +102,13 @@ public class Piso {
 				for (Puerta p : puertas) {
 					if (p.getH1() == h2 && p.getH2() == h3 || p.getH1() == h3 && p.getH2() == h2) {
 						for (Baldosa b : h3.getBaldosas()) {
-							if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
-									|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
+							if (b.contienePuerta(p)) {
 								t.anexar(h3.generarTrayectoria(inicioTemp.getFila(), inicioTemp.getColumna(),
 										b.getFila(), b.getColumna()));
 							}
 						}
 						for (Baldosa b : h2.getBaldosas()) {
-							if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
-									|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
+							if (b.contienePuerta(p)) {
 								t.anexar(h2.generarTrayectoria(b.getFila(), b.getColumna(), dest.getFila(),
 										dest.getColumna()));
 							}
@@ -202,12 +196,24 @@ public class Piso {
 		return puertas;
 	}
 
+	public void setPuertas(List<Puerta> puertas) {
+		this.puertas = puertas;
+	}
+
 	public List<Trayectoria> getTrayectorias() {
 		return trayectorias;
 	}
 
+	public void setTrayectorias(List<Trayectoria> trayectorias) {
+		this.trayectorias = trayectorias;
+	}
+
 	public Map<Habitacion, Set<Habitacion>> getAdyacencias() {
 		return adyacencias;
+	}
+
+	public void setAdyacencias(Map<Habitacion, Set<Habitacion>> adyacencias) {
+		this.adyacencias = adyacencias;
 	}
 
 }

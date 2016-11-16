@@ -30,4 +30,8 @@ public class Camino {
 		return habitacion == c.habitacion && punto.getX() == c.punto.getX() && punto.getY() == c.punto.getY();
 	}
 
+	public String toString() {
+		return habitacion.getId() + "Ç" + (int) punto.getX() + "Ç" + (int) punto.getY() + "Ç";
+	}
+
 }

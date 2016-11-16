@@ -9,11 +9,8 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.ListIterator;
 import java.util.StringTokenizer;
 import javax.swing.JMenu;
@@ -28,7 +25,6 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 
 	private static final long serialVersionUID = 1L;
 	private Dibujo dibujo = new Dibujo();
-	private Piso piso;
 
 	private JMenu agregarMenu(String texto, int atajo) {
 		JMenu menu = new JMenu(texto);
@@ -37,25 +33,25 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 	}
 
 	private JMenuItem agregarItem(String texto, int atajo) {
-		JMenuItem menuItem = new JMenuItem(texto);
-		menuItem.setAccelerator(KeyStroke.getKeyStroke(atajo, ActionEvent.ALT_MASK));
-		menuItem.addActionListener(this);
-		return menuItem;
+		JMenuItem item = new JMenuItem(texto);
+		item.setAccelerator(KeyStroke.getKeyStroke(atajo, ActionEvent.ALT_MASK));
+		item.addActionListener(this);
+		return item;
 	}
 
-	public JMenuBar createMenuBar() {
-		JMenuBar menuBar = new JMenuBar();
+	private JMenuBar barraMenu() {
+		JMenuBar barra = new JMenuBar();
 		JMenu menuArchivo = agregarMenu("Archivo", KeyEvent.VK_A);
 		JMenu menuEditar = agregarMenu("Editar", KeyEvent.VK_E);
-		menuBar.add(menuArchivo);
-		menuBar.add(menuEditar);
+		barra.add(menuArchivo);
+		barra.add(menuEditar);
 		menuArchivo.add(agregarItem("Nuevo", KeyEvent.VK_1));
 		menuArchivo.add(agregarItem("Abrir", KeyEvent.VK_2));
 		menuArchivo.add(agregarItem("Guardar", KeyEvent.VK_3));
 		menuArchivo.add(agregarItem("Exportar", KeyEvent.VK_4));
 		menuEditar.add(agregarItem("Cambiar escala", KeyEvent.VK_5));
 		menuEditar.add(agregarItem("Cambiar orientación", KeyEvent.VK_6));
-		return menuBar;
+		return barra;
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -65,10 +61,15 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 		} else if (origen == "Abrir") {
 			String archivo = Archivo.abrir(".txt");
 			if (archivo != null) {
+				Piso piso = dibujo.getPiso();
 				String escalaBackup = dibujo.getEscala();
-				List<Habitacion> habitacionesBackup = piso.getHabitaciones();
+				int orientacionBackup = dibujo.getOrientacion();
+				Camino origBackup = dibujo.getOrig();
+				Point trayPBackup = dibujo.getTrayP();
+				Habitacion trayHBackup = dibujo.getTrayH();
+				Habitacion actualBackup = dibujo.getActual();
 				try {
-					List<Habitacion> habitaciones = new ArrayList<Habitacion>();
+					dibujo.eliminar();
 					BufferedReader br = new BufferedReader(new FileReader(archivo));
 					String line = br.readLine();
 					br.close();
@@ -83,16 +84,15 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 								Integer.parseInt(st.nextToken()));
 						h.setLado(Integer.parseInt(st.nextToken()));
 						h.generarBaldosas();
-						habitaciones.add(h);
+						dibujo.getPiso().getHabitaciones().add(h);
 						StringTokenizer to = new StringTokenizer(st.nextToken(), "&");
 						if (to.countTokens() > 1) {
 							while (to.hasMoreTokens()) {
-								h.obtenerBaldosa(Double.parseDouble(to.nextToken()), Double.parseDouble(to.nextToken()))
+								h.obtenerBaldosa(Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()))
 										.cambiarPasar();
 							}
 						}
 					}
-					piso.setHabitaciones(habitaciones);
 					if (s.hasMoreTokens()) {
 						st = new StringTokenizer(s.nextToken(), "%");
 						while (st.hasMoreTokens()) {
@@ -100,38 +100,45 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 							if (to.countTokens() > 1) {
 								Trayectoria t = new Trayectoria();
 								while (to.hasMoreTokens()) {
-									t.agregarBaldosa(piso.buscarId(Integer.parseInt(to.nextToken())),
+									t.agregarBaldosa(dibujo.getPiso().buscarId(Integer.parseInt(to.nextToken())),
 											Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()));
 								}
-								piso.getTrayectorias().add(t);
+								dibujo.getPiso().getTrayectorias().add(t);
 							}
 						}
 					}
 					if (s.hasMoreTokens()) {
 						st = new StringTokenizer(s.nextToken(), "Ç");
 						while (st.hasMoreTokens()) {
-							piso.agregarPuerta(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
+							dibujo.getPiso().agregarPuerta(Integer.parseInt(st.nextToken()),
 									Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
-									piso.buscarId(Integer.parseInt(st.nextToken())),
-									piso.buscarId(Integer.parseInt(st.nextToken())));
+									Integer.parseInt(st.nextToken()),
+									dibujo.getPiso().buscarId(Integer.parseInt(st.nextToken())),
+									dibujo.getPiso().buscarId(Integer.parseInt(st.nextToken())));
 						}
 					}
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(this, "Archivo no válido", "Error", JOptionPane.ERROR_MESSAGE);
 					dibujo.setEscala(escalaBackup);
-					piso.setHabitaciones(habitacionesBackup);
-					ex.printStackTrace();
+					try {
+						dibujo.setOrientacion(orientacionBackup);
+					} catch (Exception exc) {
+					}
+					dibujo.setPiso(piso);
+					dibujo.setTrayP(trayPBackup);
+					dibujo.setTrayH(trayHBackup);
+					dibujo.setOrig(origBackup);
+					dibujo.setActual(actualBackup);
 				}
 			}
 		} else if (origen == "Guardar") {
 			String archivo = Archivo.guardar(".txt");
 			if (archivo != null) {
-				ListIterator<Habitacion> i = piso.getHabitaciones().listIterator();
+				ListIterator<Habitacion> i = dibujo.getPiso().getHabitaciones().listIterator();
 				String export = dibujo.getEscala() + "|" + dibujo.getOrientacion() + "|";
 				while (i.hasNext()) {
 					Habitacion area = i.next();
-					export += area.getId() + "|" + area.getX() + "|" + area.getY() + "|" + area.getLargo() + "|"
-							+ area.getAlto() + "|" + area.getLado() + "|";
+					export += area.toString();
 					ListIterator<Point> it = area.getNoPasar().listIterator();
 					if (!it.hasNext()) {
 						export += "!";
@@ -143,7 +150,7 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 					export += "|";
 				}
 				export += "$";
-				ListIterator<Trayectoria> it = piso.getTrayectorias().listIterator();
+				ListIterator<Trayectoria> it = dibujo.getPiso().getTrayectorias().listIterator();
 				if (!it.hasNext()) {
 					export += "!";
 				} else {
@@ -151,27 +158,23 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 						Trayectoria t = it.next();
 						ListIterator<Camino> ite = t.getCamino().listIterator();
 						while (ite.hasNext()) {
-							Camino c = ite.next();
-							Point p = c.getPunto();
-							export += c.getHabitacion().getId() + "Ç" + (int) p.getX() + "Ç" + (int) p.getY() + "Ç";
+							export += ite.next().toString();
 						}
 						export += "%";
 					}
 				}
 				export += "$";
-				ListIterator<Puerta> ite = piso.getPuertas().listIterator();
+				ListIterator<Puerta> ite = dibujo.getPiso().getPuertas().listIterator();
 				if (!ite.hasNext()) {
 					export += "!";
 				} else {
 					while (ite.hasNext()) {
-						Puerta p = ite.next();
-						export += p.toString();
-						export += "Ç";
+						export += ite.next().toString();
 					}
 				}
 				try {
 					Files.write(Paths.get(archivo), export.substring(0, export.length() - 1).getBytes());
-				} catch (IOException ex) {
+				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(this, "Acceso denegado", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
@@ -208,11 +211,10 @@ public class FrameDemo extends JFrame implements ActionListener, ItemListener {
 
 	public FrameDemo() {
 		setTitle("CUTUCUCHILLO");
-		setJMenuBar(this.createMenuBar());
+		setJMenuBar(this.barraMenu());
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		add(dibujo, BorderLayout.CENTER);
-		piso = dibujo.getPiso();
 		setVisible(true);
 	}
 

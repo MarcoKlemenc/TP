@@ -320,6 +320,10 @@ class Dibujo extends JComponent {
 		piso = new Piso();
 		orientacion = 0;
 		escala = "5m";
+		trayP = null;
+		trayH = null;
+		orig = null;
+		actual = null;
 	}
 
 	public String getEscala() {
@@ -348,6 +352,38 @@ class Dibujo extends JComponent {
 
 	public void setPiso(Piso piso) {
 		this.piso = piso;
+	}
+
+	public Point getTrayP() {
+		return trayP;
+	}
+
+	public void setTrayP(Point trayP) {
+		this.trayP = trayP;
+	}
+
+	public Habitacion getActual() {
+		return actual;
+	}
+
+	public void setActual(Habitacion actual) {
+		this.actual = actual;
+	}
+
+	public Habitacion getTrayH() {
+		return trayH;
+	}
+
+	public void setTrayH(Habitacion trayH) {
+		this.trayH = trayH;
+	}
+
+	public Camino getOrig() {
+		return orig;
+	}
+
+	public void setOrig(Camino orig) {
+		this.orig = orig;
 	}
 
 }

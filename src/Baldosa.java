@@ -11,6 +11,11 @@ public class Baldosa extends Superficie {
 		this.columna = columna;
 	}
 
+	public boolean contienePuerta(Puerta p) {
+		return contiene(p.getX(), p.getY()) || contiene(p.getX() + p.getLargo(), p.getY())
+				|| contiene(p.getX(), p.getY() + p.getAlto());
+	}
+
 	public Point getCoordenadas() {
 		return new Point(getFila(), getColumna());
 	}

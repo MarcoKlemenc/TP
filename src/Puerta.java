@@ -17,7 +17,7 @@ public class Puerta extends Superficie {
 	}
 
 	public String toString() {
-		return x + "Ç" + y + "Ç" + largo + "Ç" + alto + "Ç" + h1.getId() + "Ç" + h2.getId();
+		return x + "Ç" + y + "Ç" + largo + "Ç" + alto + "Ç" + h1.getId() + "Ç" + h2.getId() + "Ç";
 	}
 
 }
