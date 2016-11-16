@@ -22,7 +22,6 @@ class Dibujo extends JComponent {
 	private Point inicio, fin, trayP;
 	private int desvioX, desvioY, orientacion;
 	private Habitacion actual, temp, trayH;
-	//private Baldosa orig, dest;
 	private Camino orig, dest;
 	private boolean shift, ctrl;
 	private Puerta pTemp = null;
@@ -61,9 +60,7 @@ class Dibujo extends JComponent {
 						Baldosa b = actual.contieneB2(e);
 						if (orig != null && dest == null) {
 							dest = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
-							if (orig != dest) {
-								/*Habitacion h1 = piso.baldosaDentro(orig);
-								Habitacion h2 = piso.baldosaDentro(dest);*/
+							if (!orig.equals(dest)) {
 								piso.generarTrayectoria(orig, dest);
 							}
 							orig = null;

@@ -36,18 +36,18 @@ public class Piso {
 					.add(h1.generarTrayectoria(orig.getFila(), orig.getColumna(), dest.getFila(), dest.getColumna()));
 		} else if (h1 != h2 && adyacencias.get(h1).contains(h2)) {
 			Trayectoria t = null;
-			for (Puerta pu : puertas) {
-				if (pu.getH1() == h1 && pu.getH2() == h2 || pu.getH1() == h2 && pu.getH2() == h1) {
-					for (Baldosa ba : h1.getBaldosas()) {
-						if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-								|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-							t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), ba.getFila(), ba.getColumna());
+			for (Puerta p : puertas) {
+				if (p.getH1() == h1 && p.getH2() == h2 || p.getH1() == h2 && p.getH2() == h1) {
+					for (Baldosa b : h1.getBaldosas()) {
+						if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
+								|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
+							t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), b.getFila(), b.getColumna());
 						}
 					}
-					for (Baldosa ba : h2.getBaldosas()) {
-						if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-								|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-							t.anexar(h2.generarTrayectoria(ba.getFila(), ba.getColumna(), dest.getFila(),
+					for (Baldosa b : h2.getBaldosas()) {
+						if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
+								|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
+							t.anexar(h2.generarTrayectoria(b.getFila(), b.getColumna(), dest.getFila(),
 									dest.getColumna()));
 						}
 					}
@@ -60,48 +60,45 @@ public class Piso {
 			cerca.add(h2);
 			cerca.addAll(adyacencias.get(h2));
 			cerca.retainAll(adyacencias.get(h1));
-			Iterator<Habitacion> azar = cerca.iterator();
-			Habitacion h3 = azar.next();
-			Baldosa inicioTemp = null;
 			if (!cerca.isEmpty()) {
+				Iterator<Habitacion> azar = cerca.iterator();
+				Habitacion h3 = azar.next();
+				Baldosa inicioTemp = null;
 				Trayectoria t = null;
-				for (Puerta pu : puertas) {
-					if (pu.getH1() == h1 && pu.getH2() == h3 || pu.getH1() == h3 && pu.getH2() == h1) {
-						for (Baldosa ba : h1.getBaldosas()) {
-							if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-									|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-								t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), ba.getFila(),
-										ba.getColumna());
+				for (Puerta p : puertas) {
+					if (p.getH1() == h1 && p.getH2() == h3 || p.getH1() == h3 && p.getH2() == h1) {
+						for (Baldosa b : h1.getBaldosas()) {
+							if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
+									|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
+								t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), b.getFila(),
+										b.getColumna());
 							}
 						}
-						for (Baldosa ba : h3.getBaldosas()) {
-							if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-									|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-								inicioTemp = ba;
+						for (Baldosa b : h3.getBaldosas()) {
+							if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
+									|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
+								inicioTemp = b;
 							}
 						}
 					}
-					break;
 				}
-				for (Puerta pu : puertas) {
-					if (pu.getH1() == h2 && pu.getH2() == h3 || pu.getH1() == h3 && pu.getH2() == h2) {
-						for (Baldosa ba : h3.getBaldosas()) {
-							if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-									|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
+				for (Puerta p : puertas) {
+					if (p.getH1() == h2 && p.getH2() == h3 || p.getH1() == h3 && p.getH2() == h2) {
+						for (Baldosa b : h3.getBaldosas()) {
+							if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
+									|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
 								t.anexar(h3.generarTrayectoria(inicioTemp.getFila(), inicioTemp.getColumna(),
-										ba.getFila(), ba.getColumna()));
+										b.getFila(), b.getColumna()));
 							}
 						}
-						for (Baldosa ba : h2.getBaldosas()) {
-							if (ba.contiene(pu.getX(), pu.getY()) || ba.contiene(pu.getX() + pu.getLargo(), pu.getY())
-									|| ba.contiene(pu.getX(), pu.getY() + pu.getAlto())) {
-								t.anexar(h2.generarTrayectoria(ba.getFila(), ba.getColumna(), dest.getFila(),
+						for (Baldosa b : h2.getBaldosas()) {
+							if (b.contiene(p.getX(), p.getY()) || b.contiene(p.getX() + p.getLargo(), p.getY())
+									|| b.contiene(p.getX(), p.getY() + p.getAlto())) {
+								t.anexar(h2.generarTrayectoria(b.getFila(), b.getColumna(), dest.getFila(),
 										dest.getColumna()));
-
 							}
 						}
 					}
-					break;
 				}
 				trayectorias.add(t);
 			}
