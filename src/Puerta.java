@@ -1,3 +1,5 @@
+import java.awt.geom.Area;
+
 public class Puerta extends Superficie {
 
 	private Habitacion h1, h2;
@@ -6,6 +8,16 @@ public class Puerta extends Superficie {
 		super(x, y, largo, alto);
 		this.h1 = h1;
 		this.h2 = h2;
+	}
+
+	public boolean intersecta(Puerta p) {
+		if (equals(p)) {
+			return false;
+		} else {
+			Area a = new Area(getForma());
+			a.intersect(new Area(p.getForma()));
+			return !a.isEmpty();
+		}
 	}
 
 	public Habitacion getH1() {

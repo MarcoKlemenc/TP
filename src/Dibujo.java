@@ -3,11 +3,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import java.util.List;
@@ -20,60 +20,50 @@ class Dibujo extends JComponent {
 	private Piso piso = new Piso();
 	private Point inicio, fin, trayP;
 	private int desvioX, desvioY, orientacion;
-	private Habitacion actual, temp, trayH;
+	private Habitacion actual, temp, trayH, seleccionada;
 	private Camino orig, dest;
-	private boolean shift, ctrl;
-	private Puerta pTemp = null;
+	private Puerta pTemp, pActual;
 	private String escala = "5m";
 
 	public Dibujo() {
 
 		this.setFocusable(true);
-		this.addKeyListener(new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				if (e.isShiftDown()) {
-					shift = true;
-				} else if (e.isControlDown()) {
-					ctrl = true;
-				}
-			}
-
-			public void keyReleased(KeyEvent e) {
-				shift = false;
-				ctrl = false;
-			}
-		});
 
 		this.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {
 				List<Habitacion> l = piso.contiene(e);
-				if (SwingUtilities.isLeftMouseButton(e)) {
-					Puerta p = piso.contieneP(e);
-					if (p != null) {
-						piso.eliminarPuerta(p);
-					} else if (pTemp != null) {
-						piso.agregarPuerta(pTemp);
-					} else if (l.size() == 1) {
-						actual = l.get(0);
-						Baldosa b = actual.contieneB2(e);
-						if (orig != null && dest == null) {
-							dest = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
-							if (!orig.equals(dest)) {
-								piso.generarTrayectoria(orig, dest);
+				if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e) && l.size() == 1) {
+					seleccionada = l.get(0);
+				} else {
+					seleccionada = null;
+					if (SwingUtilities.isLeftMouseButton(e)) {
+						Puerta p = piso.contieneP(e);
+						if (p != null) {
+							piso.eliminarPuerta(p);
+						} else if (pTemp != null) {
+							piso.agregarPuerta(pTemp);
+						} else if (l.size() == 1) {
+							actual = l.get(0);
+							Baldosa b = actual.contieneB2(e);
+							if (orig != null && dest == null) {
+								dest = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
+								if (!orig.equals(dest)) {
+									piso.generarTrayectoria(orig, dest);
+								}
+								orig = null;
+								trayP = null;
+								trayH = null;
+							} else {
+								if (piso.eliminarTrayectoria(e, b)) {
+									return;
+								}
+								orig = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
+								trayP = new Point(b.getFila(), b.getColumna());
+								trayH = actual;
 							}
-							orig = null;
-							trayP = null;
-							trayH = null;
-						} else {
-							if (piso.eliminarTrayectoria(e, b)) {
-								return;
-							}
-							orig = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
-							trayP = new Point(b.getFila(), b.getColumna());
-							trayH = actual;
+							dest = null;
 						}
-						dest = null;
 					}
 				}
 			}
@@ -81,12 +71,15 @@ class Dibujo extends JComponent {
 			public void mousePressed(MouseEvent e) {
 				List<Habitacion> l = piso.contiene(e);
 				if (SwingUtilities.isLeftMouseButton(e)) {
-					if (l.size() == 1) {
-						actual = l.get(0);
-						desvioX = e.getX() - actual.getX();
-						desvioY = e.getY() - actual.getY();
-					} else if (l.size() == 0) {
-						inicio = new Point(e.getX(), e.getY());
+					pActual = piso.contieneP(e);
+					if (pActual == null) {
+						if (l.size() == 1) {
+							actual = l.get(0);
+							desvioX = e.getX() - actual.getX();
+							desvioY = e.getY() - actual.getY();
+						} else if (l.size() == 0) {
+							inicio = new Point(e.getX(), e.getY());
+						}
 					}
 				} else if (SwingUtilities.isRightMouseButton(e)) {
 					if (l.size() == 1) {
@@ -135,20 +128,25 @@ class Dibujo extends JComponent {
 						}
 					}
 				}
+				for (Puerta p : piso.getPuertas()) {
+					if (pTemp != null && pTemp.intersecta(p)) {
+						pTemp = null;
+					}
+				}
 				repaint();
 			}
 
 			public void mouseDragged(MouseEvent e) {
 				if (SwingUtilities.isLeftMouseButton(e)) {
-					Puerta p = piso.contieneP(e);
-					if (p != null) {
-						p.setAlto(e.getY() - p.getY());
+
+					if (pActual != null) {
+						pActual.setAlto(e.getY() - pActual.getY());
 					}
 					if (actual == null) {
 						fin = new Point(e.getX(), e.getY());
 					} else {
 						for (Puerta pu : piso.getPuertas()) {
-							if ((pu.getH1() == actual || pu.getH2() == actual) && !ctrl) {
+							if ((pu.getH1() == actual || pu.getH2() == actual)) {
 								actual = null;
 								return;
 							}
@@ -156,7 +154,7 @@ class Dibujo extends JComponent {
 						int x = e.getX() - actual.getX();
 						int y = e.getY() - actual.getY();
 						List<Habitacion> l = piso.cruza(actual);
-						if (shift && !ctrl) {
+						if (seleccionada != null) {
 							if (actual.getLargo() <= 2 || actual.getAlto() <= 2) {
 								piso.getHabitaciones().remove(actual);
 								repaint();
@@ -177,8 +175,6 @@ class Dibujo extends JComponent {
 									}
 								}
 							}
-						} else if (!shift && ctrl) {
-							actual.setLado(Math.max(2, x));
 						} else {
 							x = e.getX() - desvioX;
 							y = e.getY() - desvioY;
@@ -220,6 +216,20 @@ class Dibujo extends JComponent {
 				}
 				repaint();
 			}
+		});
+
+		this.addMouseWheelListener(new MouseWheelListener() {
+
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				if (seleccionada != null) {
+					int lado = seleccionada.getLado();
+					lado += e.getWheelRotation();
+					seleccionada.setLado(lado);
+					seleccionada.generarBaldosas();
+				}
+				repaint();
+			}
+
 		});
 	}
 
@@ -272,11 +282,21 @@ class Dibujo extends JComponent {
 				}
 			}
 		}
+		if (seleccionada != null) {
+			g2.setPaint(new Color(0, 192, 0, 128));
+			g2.fill(seleccionada.getInterior());
+		}
 		if (trayP != null) {
 			g2.setPaint(new Color(192, 192, 192, 128));
 			for (Habitacion h : piso.getHabitaciones()) {
 				if (h == trayH) {
-					g2.fill(h.obtenerBaldosa(trayP.getX(), trayP.getY()).getForma());
+					Baldosa b = h.obtenerBaldosa(trayP.getX(), trayP.getY());
+					if (b != null) {
+						g2.fill(b.getForma());
+					} else {
+						trayH = null;
+						trayP = null;
+					}
 				}
 			}
 		}
@@ -309,6 +329,7 @@ class Dibujo extends JComponent {
 		trayH = null;
 		orig = null;
 		actual = null;
+		seleccionada = null;
 	}
 
 	public String getEscala() {
