@@ -9,7 +9,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -108,26 +107,7 @@ class Dibujo extends JComponent {
 					}
 				} else if (SwingUtilities.isRightMouseButton(e)) {
 					if (l.size() == 1) {
-						Habitacion h = l.get(0);
-						List<Puerta> lp = new ArrayList<Puerta>();
-						for (Puerta p : piso.getPuertas()) {
-							if (p.getH1() == h || p.getH2() == h) {
-								lp.add(p);
-							}
-						}
-						for (Set<Habitacion> s : piso.getAdyacencias().values()) {
-							s.remove(h);
-						}
-						List<Trayectoria> lt = new ArrayList<Trayectoria>();
-						for (Trayectoria t : piso.getTrayectorias()) {
-							if (t.getHabitaciones().contains(h)) {
-								lt.add(t);
-							}
-						}
-						piso.getTrayectorias().removeAll(lt);
-						piso.getAdyacencias().remove(h);
-						piso.getHabitaciones().remove(h);
-						piso.getPuertas().removeAll(lp);
+						piso.eliminarHabitacion(l.get(0));
 					}
 				} else if (SwingUtilities.isMiddleMouseButton(e)) {
 					if (l.size() == 1) {

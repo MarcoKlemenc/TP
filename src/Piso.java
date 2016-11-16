@@ -13,7 +13,28 @@ public class Piso {
 	private List<Puerta> puertas = new ArrayList<Puerta>();
 	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
 	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
-	private Grafo grafo = null;
+
+	public void eliminarHabitacion(Habitacion h) {
+		Iterator<Puerta> i = puertas.listIterator();
+		while (i.hasNext()) {
+			Puerta p = i.next();
+			if (p.getH1() == h || p.getH2() == h) {
+				puertas.remove(p);
+			}
+		}
+		for (Set<Habitacion> s : adyacencias.values()) {
+			s.remove(h);
+		}
+		Iterator<Trayectoria> it = trayectorias.listIterator();
+		while (it.hasNext()) {
+			Trayectoria t = it.next();
+			if (t.getHabitaciones().contains(h)) {
+				trayectorias.remove(t);
+			}
+		}
+		adyacencias.remove(h);
+		habitaciones.remove(h);
+	}
 
 	public boolean eliminarTrayectoria(MouseEvent e, Baldosa b) {
 		for (Trayectoria t : trayectorias) {
@@ -187,14 +208,6 @@ public class Piso {
 
 	public Map<Habitacion, Set<Habitacion>> getAdyacencias() {
 		return adyacencias;
-	}
-
-	public Grafo getGrafo() {
-		return grafo;
-	}
-
-	public void setGrafo(Grafo grafo) {
-		this.grafo = grafo;
 	}
 
 }
