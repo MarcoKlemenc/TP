@@ -63,7 +63,7 @@ public class Piso {
 		if (h1 == h2) {
 			trayectorias
 					.add(h1.generarTrayectoria(orig.getFila(), orig.getColumna(), dest.getFila(), dest.getColumna()));
-		} else if (h1 != h2 && adyacencias.get(h1).contains(h2)) {
+		} else if (h1 != h2 && adyacencias.containsKey(h1) && adyacencias.get(h1).contains(h2)) {
 			Trayectoria t = null;
 			for (Puerta p : puertas) {
 				if (p.getH1() == h1 && p.getH2() == h2 || p.getH1() == h2 && p.getH2() == h1) {
@@ -81,7 +81,7 @@ public class Piso {
 				}
 			}
 			trayectorias.add(t);
-		} else {
+		} else if (adyacencias.containsKey(h1)) {
 			Set<Habitacion> cerca = new HashSet<Habitacion>();
 			cerca.add(h2);
 			cerca.addAll(adyacencias.get(h2));
