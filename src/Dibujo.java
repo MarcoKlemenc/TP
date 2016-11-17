@@ -25,8 +25,8 @@ class Dibujo extends JComponent {
 	private String escala = "5m";
 	private int modo;
 	private String[] modos;
-	
-	public void cambiarModo(){
+
+	public void cambiarModo() {
 		modo += (modo == 2) ? -2 : 1;
 	}
 
@@ -45,6 +45,9 @@ class Dibujo extends JComponent {
 				List<Habitacion> l = piso.contiene(e);
 				if (seleccionada != null && l.size() == 1 && l.get(0) == seleccionada) {
 					piso.eliminarHabitacion(l.get(0));
+					seleccionada = null;
+					repaint();
+					return;
 				}
 				seleccionada = null;
 				Puerta p = piso.contieneP(e);
@@ -79,6 +82,7 @@ class Dibujo extends JComponent {
 						b.cambiarPasar();
 					}
 				}
+				repaint();
 			}
 
 			public void mousePressed(MouseEvent e) {

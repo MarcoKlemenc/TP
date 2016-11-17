@@ -13,6 +13,7 @@ public class Trayectoria {
 		for (Camino c : t.getCamino()) {
 			camino.add(c);
 		}
+		habitaciones.addAll(t.getHabitaciones());
 	}
 
 	public void agregarBaldosa(Habitacion h, Point p) {
