@@ -59,12 +59,14 @@ class Dibujo extends JComponent {
 				} else if (l.size() >= 1) {
 					for (Habitacion h1 : piso.getHabitaciones()) {
 						for (Habitacion h2 : piso.getHabitaciones()) {
-							if (piso.contienePuertaV(h1, h2, e) || piso.contienePuertaV(h2, h1, e)) {
+							if ((piso.contienePuertaV(h1, h2, e) || piso.contienePuertaV(h2, h1, e))
+									&& h1.intersecta(h2)) {
 								int x = Math.min(h1.getX(), h2.getX());
 								int largo = Math.min(h1.getX(), h2.getX()) == h1.getX() ? h1.getLargo() : h2.getLargo();
 								piso.agregarPuerta(x + largo - 3, e.getY(), 7, 30, h1, h2, true);
 								return;
-							} else if (piso.contienePuertaH(h1, h2, e) || piso.contienePuertaH(h2, h1, e)) {
+							} else if ((piso.contienePuertaH(h1, h2, e) || piso.contienePuertaH(h2, h1, e))
+									&& h1.intersecta(h2)) {
 								int y = Math.min(h1.getY(), h2.getY());
 								int alto = Math.min(h1.getY(), h2.getY()) == h1.getY() ? h1.getAlto() : h2.getAlto();
 								piso.agregarPuerta(e.getX(), y + alto - 3, 30, 7, h1, h2, false);
