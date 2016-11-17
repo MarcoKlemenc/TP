@@ -140,12 +140,21 @@ class Dibujo extends JComponent {
 
 			public void mouseDragged(MouseEvent e) {
 				if (pActual != null) {
+					Habitacion h1 = pActual.getH1();
+					Habitacion h2 = pActual.getH2();
 					if (pActual.isVertical()) {
-						pActual.setAlto(e.getY() - pActual.getY());
+						int alto = e.getY() - pActual.getY();
+						alto = Math.max(2, alto);
+						alto = Math.min(alto,
+								Math.min(h1.getY() + h1.getAlto(), h2.getY() + h2.getAlto()) - pActual.getY());
+						pActual.setAlto(alto);
 					} else {
-						pActual.setLargo(e.getX() - pActual.getX());
+						int largo = e.getX() - pActual.getX();
+						largo = Math.max(2, largo);
+						largo = Math.min(largo,
+								Math.min(h1.getX() + h1.getLargo(), h2.getX() + h2.getLargo()) - pActual.getX());
+						pActual.setLargo(largo);
 					}
-
 				}
 				if (actual == null) {
 					fin = new Point(e.getX(), e.getY());
@@ -226,6 +235,8 @@ class Dibujo extends JComponent {
 				if (seleccionada != null) {
 					int lado = seleccionada.getLado();
 					lado += e.getWheelRotation();
+					lado = Math.max(2, lado);
+					lado = Math.min(lado, Math.min(seleccionada.getLargo(), seleccionada.getAlto()));
 					seleccionada.setLado(lado);
 					seleccionada.generarBaldosas();
 				}
