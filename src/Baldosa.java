@@ -1,6 +1,6 @@
 import java.awt.Point;
 
-public class Baldosa extends Superficie {
+public class Baldosa extends Componente {
 
 	private int fila, columna;
 	private boolean pasar = true;
@@ -11,7 +11,7 @@ public class Baldosa extends Superficie {
 		this.columna = columna;
 	}
 
-	public boolean contienePuerta(Puerta p) {
+	public boolean contiene(Puerta p) {
 		return contiene(p.getX(), p.getY()) || contiene(p.getX() + p.getLargo(), p.getY())
 				|| contiene(p.getX(), p.getY() + p.getAlto());
 	}

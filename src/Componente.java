@@ -1,10 +1,10 @@
 import java.awt.geom.Rectangle2D;
 
-public class Superficie {
+public class Componente {
 
 	protected int x, y, largo, alto;
 
-	public Superficie(int x, int y, int largo, int alto) {
+	public Componente(int x, int y, int largo, int alto) {
 		this.x = x;
 		this.y = y;
 		this.largo = largo;

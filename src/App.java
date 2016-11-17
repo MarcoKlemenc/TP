@@ -16,7 +16,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JMenuBar;
 import javax.swing.JFrame;
 
-public class FrameDemo extends JFrame implements ActionListener {
+public class App extends JFrame implements ActionListener {
 
 	private static final long serialVersionUID = 1L;
 	private Dibujo dibujo = new Dibujo();
@@ -27,7 +27,7 @@ public class FrameDemo extends JFrame implements ActionListener {
 			Piso piso = dibujo.getPiso();
 			String escalaBackup = dibujo.getEscala();
 			int orientacionBackup = dibujo.getOrientacion();
-			Camino origBackup = dibujo.getOrig();
+			Recorrido origBackup = dibujo.getOrig();
 			Point trayPBackup = dibujo.getTrayP();
 			Habitacion trayHBackup = dibujo.getTrayH();
 			Habitacion actualBackup = dibujo.getActual();
@@ -44,9 +44,8 @@ public class FrameDemo extends JFrame implements ActionListener {
 					Habitacion.setIdActual(Integer.parseInt(st.nextToken()));
 					Habitacion h = new Habitacion(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
 							Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
+					dibujo.getPiso().agregarHabitacion(h);
 					h.setLado(Integer.parseInt(st.nextToken()));
-					h.generarBaldosas();
-					dibujo.getPiso().getHabitaciones().add(h);
 					StringTokenizer to = new StringTokenizer(st.nextToken(), "&");
 					if (to.countTokens() > 1) {
 						while (to.hasMoreTokens()) {
@@ -82,6 +81,7 @@ public class FrameDemo extends JFrame implements ActionListener {
 				}
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(this, "Archivo no válido", "Error", JOptionPane.ERROR_MESSAGE);
+				e.printStackTrace();
 				dibujo.setEscala(escalaBackup);
 				try {
 					dibujo.setOrientacion(orientacionBackup);
@@ -120,7 +120,7 @@ public class FrameDemo extends JFrame implements ActionListener {
 			} else {
 				while (it.hasNext()) {
 					Trayectoria t = it.next();
-					ListIterator<Camino> ite = t.getCamino().listIterator();
+					ListIterator<Recorrido> ite = t.getCamino().listIterator();
 					while (ite.hasNext()) {
 						export += ite.next().toString();
 					}
@@ -208,7 +208,7 @@ public class FrameDemo extends JFrame implements ActionListener {
 		dibujo.repaint();
 	}
 
-	public FrameDemo() {
+	public App() {
 		setTitle("Trabajo práctico final");
 		setJMenuBar(this.barraMenu());
 		setSize(800, 600);
@@ -218,6 +218,6 @@ public class FrameDemo extends JFrame implements ActionListener {
 	}
 
 	public static void main(String[] args) {
-		new FrameDemo();
+		new App();
 	}
 }

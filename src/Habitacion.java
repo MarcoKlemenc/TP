@@ -5,7 +5,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Habitacion extends Superficie {
+public class Habitacion extends Componente {
 
 	private static int idActual = 1;
 	private int id, lado;
@@ -25,7 +25,7 @@ public class Habitacion extends Superficie {
 		return false;
 	}
 
-	public Baldosa contieneB2(MouseEvent e) {
+	public Baldosa contieneB(MouseEvent e) {
 		for (Baldosa b : baldosas) {
 			if (b.contiene(e.getX(), e.getY())) {
 				return b;

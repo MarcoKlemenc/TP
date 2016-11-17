@@ -1,6 +1,6 @@
 import java.awt.geom.Area;
 
-public class Puerta extends Superficie {
+public class Puerta extends Componente {
 
 	private Habitacion h1, h2;
 	private boolean vertical;
@@ -12,7 +12,7 @@ public class Puerta extends Superficie {
 		this.vertical = vertical;
 	}
 
-	public boolean intersecta(Puerta p) {
+	public boolean cruza(Puerta p) {
 		if (equals(p)) {
 			return false;
 		} else {

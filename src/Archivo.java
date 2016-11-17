@@ -29,16 +29,16 @@ public class Archivo {
 
 	public static String abrir(String extension) {
 		inicializar(extension);
-		int d = fc.showOpenDialog(fc);
+		int a = fc.showOpenDialog(fc);
 		guardarDir();
-		return d == JFileChooser.APPROVE_OPTION ? fc.getSelectedFile().toString() : null;
+		return a == JFileChooser.APPROVE_OPTION ? fc.getSelectedFile().toString() : null;
 	}
 
 	public static String guardar(String extension) {
 		inicializar(extension);
-		int d = fc.showSaveDialog(fc);
+		int g = fc.showSaveDialog(fc);
 		guardarDir();
-		if (d == JFileChooser.APPROVE_OPTION) {
+		if (g == JFileChooser.APPROVE_OPTION) {
 			String nombre = fc.getSelectedFile().toString();
 			return !nombre.endsWith(extension) ? nombre += extension : nombre;
 		}

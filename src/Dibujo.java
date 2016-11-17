@@ -20,7 +20,7 @@ class Dibujo extends JComponent {
 	private Point inicio, fin, trayP;
 	private int desvioX, desvioY, orientacion;
 	private Habitacion actual, temp, trayH, seleccionada;
-	private Camino orig, dest;
+	private Recorrido orig, dest;
 	private Puerta pActual;
 	private String escala = "5m";
 	private int modo;
@@ -75,12 +75,12 @@ class Dibujo extends JComponent {
 						}
 					}
 					actual = l.get(0);
-					Baldosa b = actual.contieneB2(e);
+					Baldosa b = actual.contieneB(e);
 					if (modo == 0) {
 						seleccionada = l.get(0);
 					} else if (modo == 1) {
 						if (orig != null && dest == null && b.isPasar()) {
-							dest = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
+							dest = new Recorrido(piso.baldosaDentro(b), b.getCoordenadas());
 							if (!orig.equals(dest)) {
 								piso.generarTrayectoria(orig, dest);
 							}
@@ -88,15 +88,15 @@ class Dibujo extends JComponent {
 							trayP = null;
 							trayH = null;
 						} else if (!piso.eliminarTrayectoria(e, b) && b.isPasar()) {
-							orig = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
+							orig = new Recorrido(piso.baldosaDentro(b), b.getCoordenadas());
 							trayP = new Point(b.getFila(), b.getColumna());
 							trayH = actual;
 						}
 						dest = null;
 					} else {
 						for (Trayectoria t : piso.getTrayectorias()) {
-							for (Camino c : t.getCamino()) {
-								if (c.getHabitacion() == actual && c.getPunto().equals(b.getCoordenadas())) {
+							for (Recorrido r : t.getCamino()) {
+								if (r.getHabitacion() == actual && r.getCoordenadas().equals(b.getCoordenadas())) {
 									return;
 								}
 							}
@@ -133,12 +133,7 @@ class Dibujo extends JComponent {
 
 			public void mouseReleased(MouseEvent e) {
 				if (actual == null && temp != null && temp.getLargo() >= 2 && temp.getAlto() >= 2) {
-					Habitacion h = new Habitacion(temp.getX(), temp.getY(), temp.getLargo(), temp.getAlto());
-					if (piso.cruza(h).size() == 0) {
-						piso.getHabitaciones().add(h);
-						h.setLado(Math.min(h.getAlto(), h.getLargo()) / 4 + 1);
-						h.generarBaldosas();
-					}
+					piso.agregarHabitacion(new Habitacion(temp.getX(), temp.getY(), temp.getLargo(), temp.getAlto()));
 				}
 				inicio = null;
 				fin = null;
@@ -295,9 +290,9 @@ class Dibujo extends JComponent {
 		List<Trayectoria> tt = new ArrayList<Trayectoria>();
 		for (Trayectoria t : piso.getTrayectorias()) {
 			g2.setPaint(colores[col += (col == 7) ? -7 : 1]);
-			for (Camino c : t.getCamino()) {
-				Point p = c.getPunto();
-				Baldosa b = c.getHabitacion().obtenerBaldosa(p.getX(), p.getY());
+			for (Recorrido r : t.getCamino()) {
+				Point p = r.getCoordenadas();
+				Baldosa b = r.getHabitacion().obtenerBaldosa(p.getX(), p.getY());
 				if (b != null) {
 					g2.fill(b.getInterior());
 				} else {
@@ -401,11 +396,11 @@ class Dibujo extends JComponent {
 		this.trayH = trayH;
 	}
 
-	public Camino getOrig() {
+	public Recorrido getOrig() {
 		return orig;
 	}
 
-	public void setOrig(Camino orig) {
+	public void setOrig(Recorrido orig) {
 		this.orig = orig;
 	}
 

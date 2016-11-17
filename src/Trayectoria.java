@@ -6,31 +6,31 @@ import java.util.Set;
 
 public class Trayectoria {
 
-	private List<Camino> camino = new ArrayList<Camino>();
+	private List<Recorrido> camino = new ArrayList<Recorrido>();
 	private Set<Habitacion> habitaciones = new HashSet<Habitacion>();
 
 	public void anexar(Trayectoria t) {
-		for (Camino c : t.getCamino()) {
+		for (Recorrido c : t.getCamino()) {
 			camino.add(c);
 		}
 		habitaciones.addAll(t.getHabitaciones());
 	}
 
 	public void agregarBaldosa(Habitacion h, int f, int c) {
-		camino.add(new Camino(h, new Point(f, c)));
+		camino.add(new Recorrido(h, new Point(f, c)));
 		habitaciones.add(h);
 	}
 
 	public boolean buscar(Habitacion h, Point p) {
-		for (Camino c : camino) {
-			if (c.getHabitacion() == h && c.getPunto().getX() == p.getX() && c.getPunto().getY() == p.getY()) {
+		for (Recorrido r : camino) {
+			if (r.getHabitacion() == h && r.getCoordenadas().equals(p)) {
 				return true;
 			}
 		}
 		return false;
 	}
 
-	public List<Camino> getCamino() {
+	public List<Recorrido> getCamino() {
 		return camino;
 	}
 
