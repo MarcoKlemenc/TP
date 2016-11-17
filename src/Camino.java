@@ -27,7 +27,7 @@ public class Camino {
 	}
 
 	public boolean equals(Camino c) {
-		return habitacion == c.habitacion && punto.getX() == c.punto.getX() && punto.getY() == c.punto.getY();
+		return habitacion == c.habitacion && punto.equals(c.getPunto());
 	}
 
 	public String toString() {

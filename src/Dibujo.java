@@ -77,7 +77,7 @@ class Dibujo extends JComponent {
 					if (modo == 0) {
 						seleccionada = l.get(0);
 					} else if (modo == 1) {
-						if (orig != null && dest == null) {
+						if (orig != null && dest == null && b.isPasar()) {
 							dest = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
 							if (!orig.equals(dest)) {
 								piso.generarTrayectoria(orig, dest);
@@ -85,16 +85,25 @@ class Dibujo extends JComponent {
 							orig = null;
 							trayP = null;
 							trayH = null;
-						} else {
-							if (piso.eliminarTrayectoria(e, b)) {
-								return;
-							}
+						} else if (!piso.eliminarTrayectoria(e, b) && b.isPasar()) {
 							orig = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
 							trayP = new Point(b.getFila(), b.getColumna());
 							trayH = actual;
 						}
 						dest = null;
 					} else {
+						for (Trayectoria t : piso.getTrayectorias()) {
+							for (Camino c : t.getCamino()) {
+								if (c.getHabitacion() == actual && c.getPunto().equals(b.getCoordenadas())) {
+									return;
+								}
+							}
+						}
+						if (b.getCoordenadas().equals(trayP)) {
+							orig = null;
+							trayP = null;
+							trayH = null;
+						}
 						b.cambiarPasar();
 					}
 				}
