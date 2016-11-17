@@ -21,7 +21,7 @@ class Dibujo extends JComponent {
 	private int desvioX, desvioY, orientacion;
 	private Habitacion actual, temp, trayH, seleccionada;
 	private Camino orig, dest;
-	private Puerta pTemp, pActual;
+	private Puerta pActual;
 	private String escala = "5m";
 	private int modo;
 	private String[] modos;
@@ -53,9 +53,22 @@ class Dibujo extends JComponent {
 				Puerta p = piso.contieneP(e);
 				if (p != null) {
 					piso.eliminarPuerta(p);
-				} else if (pTemp != null) {
-					piso.agregarPuerta(pTemp);
-				} else if (l.size() == 1) {
+				} else if (l.size() >= 1) {
+					for (Habitacion h1 : piso.getHabitaciones()) {
+						for (Habitacion h2 : piso.getHabitaciones()) {
+							if (piso.contienePuertaV(h1, h2, e) || piso.contienePuertaV(h2, h1, e)) {
+								int x = Math.min(h1.getX(), h2.getX());
+								int largo = Math.min(h1.getX(), h2.getX()) == h1.getX() ? h1.getLargo() : h2.getLargo();
+								piso.agregarPuerta(x + largo - 3, e.getY(), 7, 30, h1, h2);
+								return;
+							} else if (piso.contienePuertaH(h1, h2, e) || piso.contienePuertaH(h2, h1, e)) {
+								int y = Math.min(h1.getY(), h2.getY());
+								int alto = Math.min(h1.getY(), h2.getY()) == h1.getY() ? h1.getAlto() : h2.getAlto();
+								piso.agregarPuerta(e.getX(), y + alto - 3, 30, 7, h1, h2);
+								return;
+							}
+						}
+					}
 					actual = l.get(0);
 					Baldosa b = actual.contieneB2(e);
 					if (modo == 0) {
@@ -120,29 +133,6 @@ class Dibujo extends JComponent {
 			}
 		});
 		this.addMouseMotionListener(new MouseMotionAdapter() {
-
-			public void mouseMoved(MouseEvent e) {
-				pTemp = null;
-				for (Habitacion h1 : piso.getHabitaciones()) {
-					for (Habitacion h2 : piso.getHabitaciones()) {
-						if (piso.contienePuertaV(h1, h2, e) || piso.contienePuertaV(h2, h1, e)) {
-							int x = Math.min(h1.getX(), h2.getX());
-							int largo = Math.min(h1.getX(), h2.getX()) == h1.getX() ? h1.getLargo() : h2.getLargo();
-							pTemp = new Puerta(x + largo - 3, e.getY(), 7, 30, h1, h2);
-						} else if (piso.contienePuertaH(h1, h2, e) || piso.contienePuertaH(h2, h1, e)) {
-							int y = Math.min(h1.getY(), h2.getY());
-							int alto = Math.min(h1.getY(), h2.getY()) == h1.getY() ? h1.getAlto() : h2.getAlto();
-							pTemp = new Puerta(e.getX(), y + alto - 3, 30, 7, h1, h2);
-						}
-					}
-				}
-				for (Puerta p : piso.getPuertas()) {
-					if (pTemp != null && pTemp.intersecta(p)) {
-						pTemp = null;
-					}
-				}
-				repaint();
-			}
 
 			public void mouseDragged(MouseEvent e) {
 				if (pActual != null) {
@@ -308,10 +298,6 @@ class Dibujo extends JComponent {
 		for (Puerta p : piso.getPuertas()) {
 			g2.setPaint(Color.BLACK);
 			g2.fill(p.getForma());
-		}
-		if (pTemp != null) {
-			g2.setPaint(new Color(0, 0, 0, 128));
-			g2.fill(pTemp.getForma());
 		}
 		if (inicio != null && fin != null) {
 			g2.setPaint(Color.BLACK);
