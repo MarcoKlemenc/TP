@@ -128,14 +128,8 @@ public class Piso {
 		}
 	}
 
-	public void agregarPuerta(int x, int y, int largo, int alto, Habitacion h1, Habitacion h2) {
-		agregarPuerta(new Puerta(x, y, largo, alto, h1, h2));
-	}
-
-	public void agregarPuerta(Puerta p) {
-		puertas.add(p);
-		Habitacion h1 = p.getH1();
-		Habitacion h2 = p.getH2();
+	public void agregarPuerta(int x, int y, int largo, int alto, Habitacion h1, Habitacion h2, boolean vertical) {
+		puertas.add(new Puerta(x, y, largo, alto, h1, h2, vertical));
 		if (!adyacencias.containsKey(h1)) {
 			adyacencias.put(h1, new HashSet<Habitacion>());
 		}

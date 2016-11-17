@@ -76,7 +76,8 @@ public class FrameDemo extends JFrame implements ActionListener {
 								Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
 								Integer.parseInt(st.nextToken()),
 								dibujo.getPiso().buscarId(Integer.parseInt(st.nextToken())),
-								dibujo.getPiso().buscarId(Integer.parseInt(st.nextToken())));
+								dibujo.getPiso().buscarId(Integer.parseInt(st.nextToken())),
+								Boolean.valueOf(st.nextToken()));
 					}
 				}
 			} catch (Exception e) {
