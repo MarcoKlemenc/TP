@@ -158,6 +158,7 @@ public class FrameDemo extends JFrame implements ActionListener {
 		barra.add(agregarItem("Exportar"));
 		barra.add(agregarItem("Escala"));
 		barra.add(agregarItem("Orientación"));
+		barra.add(agregarItem("Modo"));
 		return barra;
 	}
 
@@ -188,9 +189,9 @@ public class FrameDemo extends JFrame implements ActionListener {
 					JOptionPane.showMessageDialog(this, "Acceso denegado", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
-		} else if (origen == "Cambiar escala") {
-			dibujo.setEscala(JOptionPane.showInputDialog("Introduzca la escala nueva"));
-		} else {
+		} else if (origen == "Escala") {
+			dibujo.setEscala(JOptionPane.showInputDialog("Introduzca la nueva escala"));
+		} else if (origen == "Orientación") {
 			String texto = null;
 			try {
 				texto = JOptionPane.showInputDialog("Introduzca la nueva orientación");
@@ -200,6 +201,8 @@ public class FrameDemo extends JFrame implements ActionListener {
 					JOptionPane.showMessageDialog(this, "Orientación inválida", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
+		} else {
+			dibujo.cambiarModo();
 		}
 		dibujo.repaint();
 	}

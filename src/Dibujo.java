@@ -23,9 +23,19 @@ class Dibujo extends JComponent {
 	private Camino orig, dest;
 	private Puerta pTemp, pActual;
 	private String escala = "5m";
-	private boolean obstaculo;
+	private int modo;
+	private String[] modos;
+	
+	public void cambiarModo(){
+		modo += (modo == 2) ? -2 : 1;
+	}
 
 	public Dibujo() {
+
+		modos = new String[3];
+		modos[0] = "habitación";
+		modos[1] = "trayectoria";
+		modos[2] = "obstáculo";
 
 		this.setFocusable(true);
 
@@ -33,47 +43,40 @@ class Dibujo extends JComponent {
 
 			public void mouseClicked(MouseEvent e) {
 				List<Habitacion> l = piso.contiene(e);
-				if (e.getClickCount() == 2 && l.size() == 1) {
-					seleccionada = l.get(0);
-					orig = null;
-					trayP = null;
-					trayH = null;
-				} else if (e.getClickCount() == 2 && l.size() == 0) {
-					obstaculo ^= true;
-				} else {
-					if (seleccionada != null && l.size() == 1 && l.get(0) == seleccionada) {
-						piso.eliminarHabitacion(l.get(0));
-					}
-					seleccionada = null;
-					Puerta p = piso.contieneP(e);
-					if (p != null) {
-						piso.eliminarPuerta(p);
-					} else if (pTemp != null) {
-						piso.agregarPuerta(pTemp);
-					} else if (l.size() == 1) {
-						actual = l.get(0);
-						Baldosa b = actual.contieneB2(e);
-						if (!obstaculo) {
-							if (orig != null && dest == null) {
-								dest = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
-								if (!orig.equals(dest)) {
-									piso.generarTrayectoria(orig, dest);
-								}
-								orig = null;
-								trayP = null;
-								trayH = null;
-							} else {
-								if (piso.eliminarTrayectoria(e, b)) {
-									return;
-								}
-								orig = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
-								trayP = new Point(b.getFila(), b.getColumna());
-								trayH = actual;
+				if (seleccionada != null && l.size() == 1 && l.get(0) == seleccionada) {
+					piso.eliminarHabitacion(l.get(0));
+				}
+				seleccionada = null;
+				Puerta p = piso.contieneP(e);
+				if (p != null) {
+					piso.eliminarPuerta(p);
+				} else if (pTemp != null) {
+					piso.agregarPuerta(pTemp);
+				} else if (l.size() == 1) {
+					actual = l.get(0);
+					Baldosa b = actual.contieneB2(e);
+					if (modo == 0) {
+						seleccionada = l.get(0);
+					} else if (modo == 1) {
+						if (orig != null && dest == null) {
+							dest = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
+							if (!orig.equals(dest)) {
+								piso.generarTrayectoria(orig, dest);
 							}
-							dest = null;
+							orig = null;
+							trayP = null;
+							trayH = null;
 						} else {
-							b.cambiarPasar();
+							if (piso.eliminarTrayectoria(e, b)) {
+								return;
+							}
+							orig = new Camino(piso.baldosaDentro(b), b.getCoordenadas());
+							trayP = new Point(b.getFila(), b.getColumna());
+							trayH = actual;
 						}
+						dest = null;
+					} else {
+						b.cambiarPasar();
 					}
 				}
 			}
@@ -317,6 +320,7 @@ class Dibujo extends JComponent {
 		g2.setPaint(Color.BLACK);
 		g2.drawLine(20, 20, 99, 20);
 		g2.drawString(escala, 20, 18);
+		g2.drawString("Modo actual: " + modos[modo], 20, getHeight() - 5);
 	}
 
 	public void eliminar() {
