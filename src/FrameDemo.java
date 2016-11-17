@@ -209,7 +209,7 @@ public class FrameDemo extends JFrame implements ActionListener {
 	}
 
 	public FrameDemo() {
-		setTitle("CUTUCUCHILLO");
+		setTitle("Trabajo práctico final");
 		setJMenuBar(this.barraMenu());
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);

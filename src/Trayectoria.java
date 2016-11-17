@@ -16,13 +16,9 @@ public class Trayectoria {
 		habitaciones.addAll(t.getHabitaciones());
 	}
 
-	public void agregarBaldosa(Habitacion h, Point p) {
-		camino.add(new Camino(h, p));
-		habitaciones.add(h);
-	}
-
 	public void agregarBaldosa(Habitacion h, int f, int c) {
-		agregarBaldosa(h, new Point(f, c));
+		camino.add(new Camino(h, new Point(f, c)));
+		habitaciones.add(h);
 	}
 
 	public boolean buscar(Habitacion h, Point p) {

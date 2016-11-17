@@ -115,7 +115,7 @@ public class Habitacion extends Superficie {
 		while (filaA != filaB || columnaA != columnaB) {
 			Baldosa b = obtenerBaldosa(filaA, columnaA);
 			if (b.isPasar()) {
-				t.agregarBaldosa(this, b.getCoordenadas());
+				t.agregarBaldosa(this, filaA, columnaA);
 				if (Math.abs(filaA - filaB) > Math.abs(columnaA - columnaB)) {
 					filaA -= Math.signum(filaA - filaB);
 				} else if (Math.abs(filaA - filaB) < Math.abs(columnaA - columnaB)) {
@@ -134,7 +134,6 @@ public class Habitacion extends Superficie {
 						} else {
 							filaA++;
 						}
-
 					}
 				} else if (obtenerBaldosa(filaA - 1, columnaA).isPasar()) {
 					filaA--;
@@ -153,7 +152,6 @@ public class Habitacion extends Superficie {
 						columnaA++;
 					}
 				}
-
 			}
 		}
 		t.agregarBaldosa(this, filaA, columnaA);

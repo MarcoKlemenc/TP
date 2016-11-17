@@ -141,7 +141,6 @@ public class Piso {
 
 	public void eliminarPuerta(Puerta p) {
 		puertas.remove(p);
-
 	}
 
 	public Habitacion buscarId(int id) {
