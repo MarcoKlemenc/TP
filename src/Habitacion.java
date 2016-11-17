@@ -11,8 +11,9 @@ public class Habitacion extends Componente {
 	private int id, lado;
 	private List<Baldosa> baldosas;
 
-	public Habitacion(int x, int y, int largo, int alto) {
+	public Habitacion(int x, int y, int largo, int alto, int lado) {
 		super(x, y, largo, alto);
+		this.lado = lado;
 		id = idActual++;
 	}
 

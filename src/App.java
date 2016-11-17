@@ -43,9 +43,9 @@ public class App extends JFrame implements ActionListener {
 				while (st.hasMoreTokens()) {
 					Habitacion.setIdActual(Integer.parseInt(st.nextToken()));
 					Habitacion h = new Habitacion(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
-							Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
+							Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
+							Integer.parseInt(st.nextToken()));
 					dibujo.getPiso().agregarHabitacion(h);
-					h.setLado(Integer.parseInt(st.nextToken()));
 					StringTokenizer to = new StringTokenizer(st.nextToken(), "&");
 					if (to.countTokens() > 1) {
 						while (to.hasMoreTokens()) {

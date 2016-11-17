@@ -23,12 +23,9 @@ public class Piso {
 	}
 
 	public void agregarHabitacion(Habitacion h) {
-		if (cruza(h).size() == 0) {
-			habitaciones.add(h);
-			adyacencias.put(h, new HashSet<Habitacion>());
-			h.setLado(Math.min(h.getAlto(), h.getLargo()) / 4 + 1);
-			h.generarBaldosas();
-		}
+		habitaciones.add(h);
+		adyacencias.put(h, new HashSet<Habitacion>());
+		h.generarBaldosas();
 	}
 
 	public void eliminarHabitacion(Habitacion h) {

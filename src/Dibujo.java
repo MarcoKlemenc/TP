@@ -132,8 +132,10 @@ class Dibujo extends JComponent {
 			}
 
 			public void mouseReleased(MouseEvent e) {
-				if (actual == null && temp != null && temp.getLargo() >= 2 && temp.getAlto() >= 2) {
-					piso.agregarHabitacion(new Habitacion(temp.getX(), temp.getY(), temp.getLargo(), temp.getAlto()));
+				if (actual == null && temp != null && temp.getLargo() >= 2 && temp.getAlto() >= 2
+						&& piso.cruza(temp).size() == 0) {
+					piso.agregarHabitacion(new Habitacion(temp.getX(), temp.getY(), temp.getLargo(), temp.getAlto(),
+							Math.min(temp.getAlto(), temp.getLargo()) / 4 + 1));
 				}
 				inicio = null;
 				fin = null;
@@ -322,7 +324,8 @@ class Dibujo extends JComponent {
 		if (inicio != null && fin != null) {
 			g2.setPaint(Color.BLACK);
 			temp = new Habitacion(Math.min(inicio.x, fin.x), Math.min(inicio.y, fin.y), Math.abs(inicio.x - fin.x),
-					Math.abs(inicio.y - fin.y));
+					Math.abs(inicio.y - fin.y),
+					Math.min(Math.abs(inicio.x - fin.x), Math.abs(inicio.y - fin.y)) / 4 + 1);
 			g2.draw(temp.getForma());
 			g2.setPaint(piso.cruza(temp).size() != 0 ? new Color(255, 0, 0, 64) : new Color(0, 255, 0, 32));
 			g2.fill(temp.getForma());
