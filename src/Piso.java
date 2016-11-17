@@ -79,7 +79,6 @@ public class Piso {
 						}
 					}
 				}
-				break;
 			}
 			trayectorias.add(t);
 		} else {
