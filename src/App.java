@@ -21,6 +21,7 @@ public class App extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private Dibujo dibujo = new Dibujo();
 	private String nombre = null;
+	private static App instance;
 
 	private void abrir() {
 		if (nombre != null) {
@@ -208,16 +209,20 @@ public class App extends JFrame implements ActionListener {
 		dibujo.repaint();
 	}
 
-	public App() {
-		setTitle("Trabajo práctico final");
+	private App() {
 		setJMenuBar(this.barraMenu());
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		add(dibujo, BorderLayout.CENTER);
+		setTitle("Modo actual: habitación");
 		setVisible(true);
 	}
 
+	public static void cambiarModo(String modo) {
+		instance.setTitle("Modo actual: " + modo);
+	}
+
 	public static void main(String[] args) {
-		new App();
+		instance = new App();
 	}
 }

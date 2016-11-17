@@ -28,6 +28,7 @@ class Dibujo extends JComponent {
 
 	public void cambiarModo() {
 		modo += (modo == 2) ? -2 : 1;
+		App.cambiarModo(modos[modo]);
 	}
 
 	private boolean aux(Habitacion h) {
@@ -333,7 +334,6 @@ class Dibujo extends JComponent {
 		g2.setPaint(Color.BLACK);
 		g2.drawLine(20, 20, 99, 20);
 		g2.drawString(escala, 20, 18);
-		g2.drawString("Modo actual: " + modos[modo], 20, getHeight() - 5);
 	}
 
 	public void eliminar() {
