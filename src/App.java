@@ -40,6 +40,7 @@ public class App extends JFrame implements ActionListener {
 				StringTokenizer s = new StringTokenizer(line, "$");
 				StringTokenizer st = new StringTokenizer(s.nextToken(), "|");
 				dibujo.setEscala(Integer.parseInt(st.nextToken()));
+				dibujo.setUnidad(st.nextToken());
 				dibujo.setOrientacion(Integer.parseInt(st.nextToken()));
 				while (st.hasMoreTokens()) {
 					Habitacion.setIdActual(Integer.parseInt(st.nextToken()));
@@ -99,7 +100,7 @@ public class App extends JFrame implements ActionListener {
 	private void guardar() {
 		if (nombre != null) {
 			ListIterator<Habitacion> i = dibujo.getPiso().getHabitaciones().listIterator();
-			String export = dibujo.getEscala() + "|" + dibujo.getOrientacion() + "|";
+			String export = dibujo.getEscala() + "|" + dibujo.getUnidad() + "|" + dibujo.getOrientacion() + "|";
 			while (i.hasNext()) {
 				Habitacion area = i.next();
 				export += area.toString();
@@ -194,7 +195,13 @@ public class App extends JFrame implements ActionListener {
 			String texto = null;
 			try {
 				texto = JOptionPane.showInputDialog("Introduzca la nueva escala");
-				dibujo.setEscala(Integer.parseInt(texto));
+				StringTokenizer st = new StringTokenizer(texto, " ");
+				if (st.countTokens() == 2) {
+					dibujo.setEscala(Integer.parseInt(st.nextToken()));
+					dibujo.setUnidad(st.nextToken());
+				} else {
+					throw new Exception();
+				}
 			} catch (Exception ex) {
 				if (texto != null) {
 					JOptionPane.showMessageDialog(this, "Escala inválida", "Error", JOptionPane.ERROR_MESSAGE);
