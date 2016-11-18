@@ -22,9 +22,10 @@ class Dibujo extends JComponent {
 	private Habitacion actual, temp, trayH, seleccionada;
 	private Recorrido orig, dest;
 	private Puerta pActual;
-	private String escala = "5m";
+	private int escala = 5;
 	private int modo;
 	private String[] modos;
+	private Trayectoria frente;
 
 	public void cambiarModo() {
 		modo += (modo == 2) ? -2 : 1;
@@ -88,10 +89,20 @@ class Dibujo extends JComponent {
 							orig = null;
 							trayP = null;
 							trayH = null;
-						} else if (!piso.eliminarTrayectoria(e, b) && b.isPasar()) {
-							orig = new Recorrido(piso.baldosaDentro(b), b.getCoordenadas());
-							trayP = new Point(b.getFila(), b.getColumna());
-							trayH = actual;
+						} else if (b.isPasar()) {
+							Trayectoria seleccion = piso.buscarTrayectoria(e, b);
+							if (seleccion == null) {
+								orig = new Recorrido(piso.baldosaDentro(b), b.getCoordenadas());
+								trayP = new Point(b.getFila(), b.getColumna());
+								trayH = actual;
+							}
+							if (frente == seleccion
+									|| seleccion == piso.getTrayectorias().get(piso.getTrayectorias().size() - 1)) {
+								piso.eliminarTrayectoria(e, b);
+								frente = null;
+							} else {
+								frente = seleccion;
+							}
 						}
 						dest = null;
 					} else {
@@ -278,6 +289,7 @@ class Dibujo extends JComponent {
 		Color[] colores = { Color.CYAN, Color.BLUE, Color.GREEN, Color.ORANGE, Color.RED, Color.MAGENTA, Color.PINK,
 				Color.YELLOW };
 		int col = -1;
+		int colorFrente = -1;
 		for (Habitacion h : piso.getHabitaciones()) {
 			g2.setPaint(new Color(160, 160, 160));
 			for (Baldosa b : h.getBaldosas()) {
@@ -293,13 +305,29 @@ class Dibujo extends JComponent {
 		List<Trayectoria> tt = new ArrayList<Trayectoria>();
 		for (Trayectoria t : piso.getTrayectorias()) {
 			g2.setPaint(colores[col += (col == 7) ? -7 : 1]);
-			for (Recorrido r : t.getCamino()) {
+			if (frente != t) {
+				for (Recorrido r : t.getCamino()) {
+					Point p = r.getCoordenadas();
+					Baldosa b = r.getHabitacion().obtenerBaldosa(p.getX(), p.getY());
+					if (b != null) {
+						g2.fill(b.getInterior());
+					} else {
+						tt.add(t);
+					}
+				}
+			} else {
+				colorFrente = col;
+			}
+		}
+		if (frente != null) {
+			g2.setPaint(colores[colorFrente]);
+			for (Recorrido r : frente.getCamino()) {
 				Point p = r.getCoordenadas();
 				Baldosa b = r.getHabitacion().obtenerBaldosa(p.getX(), p.getY());
 				if (b != null) {
 					g2.fill(b.getInterior());
 				} else {
-					tt.add(t);
+					tt.add(frente);
 				}
 			}
 		}
@@ -307,6 +335,15 @@ class Dibujo extends JComponent {
 		if (seleccionada != null) {
 			g2.setPaint(new Color(0, 192, 0, 128));
 			g2.fill(seleccionada.getInterior());
+			g2.setPaint(Color.BLACK);
+			String largo = Integer.toString(seleccionada.getLargo() * escala);
+			largo = new StringBuilder(largo).insert(largo.length() - 2, ".").toString();
+			String alto = Integer.toString(seleccionada.getAlto() * escala);
+			alto = new StringBuilder(alto).insert(alto.length() - 2, ".").toString();
+			String lado = Integer.toString(seleccionada.getLado() * escala);
+			lado = new StringBuilder(lado).insert(lado.length() - 2, ".").toString();
+			g2.drawString("Largo: " + largo + " m - Alto: " + alto + " m - Lado de baldosa: " + lado + " m", 20,
+					getHeight() - 5);
 		}
 		if (trayP != null && piso.getHabitaciones().contains(trayH)) {
 			g2.setPaint(new Color(192, 192, 192, 128));
@@ -333,13 +370,13 @@ class Dibujo extends JComponent {
 		}
 		g2.setPaint(Color.BLACK);
 		g2.drawLine(20, 20, 99, 20);
-		g2.drawString(escala, 20, 18);
+		g2.drawString(String.valueOf(escala) + " m", 20, 18);
 	}
 
 	public void eliminar() {
 		piso = new Piso();
 		orientacion = 0;
-		escala = "5m";
+		escala = 5;
 		trayP = null;
 		trayH = null;
 		orig = null;
@@ -347,12 +384,16 @@ class Dibujo extends JComponent {
 		seleccionada = null;
 	}
 
-	public String getEscala() {
+	public int getEscala() {
 		return escala;
 	}
 
-	public void setEscala(String escala) {
-		this.escala = escala != null ? escala : this.escala;
+	public void setEscala(int escala) throws Exception {
+		if (escala > 0) {
+			this.escala = escala;
+		} else {
+			throw new Exception();
+		}
 	}
 
 	public Integer getOrientacion() {

@@ -26,7 +26,7 @@ public class App extends JFrame implements ActionListener {
 	private void abrir() {
 		if (nombre != null) {
 			Piso piso = dibujo.getPiso();
-			String escalaBackup = dibujo.getEscala();
+			int escalaBackup = dibujo.getEscala();
 			int orientacionBackup = dibujo.getOrientacion();
 			Recorrido origBackup = dibujo.getOrig();
 			Point trayPBackup = dibujo.getTrayP();
@@ -39,7 +39,7 @@ public class App extends JFrame implements ActionListener {
 				br.close();
 				StringTokenizer s = new StringTokenizer(line, "$");
 				StringTokenizer st = new StringTokenizer(s.nextToken(), "|");
-				dibujo.setEscala(st.nextToken());
+				dibujo.setEscala(Integer.parseInt(st.nextToken()));
 				dibujo.setOrientacion(Integer.parseInt(st.nextToken()));
 				while (st.hasMoreTokens()) {
 					Habitacion.setIdActual(Integer.parseInt(st.nextToken()));
@@ -82,9 +82,8 @@ public class App extends JFrame implements ActionListener {
 				}
 			} catch (Exception e) {
 				JOptionPane.showMessageDialog(this, "Archivo no válido", "Error", JOptionPane.ERROR_MESSAGE);
-				e.printStackTrace();
-				dibujo.setEscala(escalaBackup);
 				try {
+					dibujo.setEscala(escalaBackup);
 					dibujo.setOrientacion(orientacionBackup);
 				} catch (Exception ex) {
 				}
@@ -192,7 +191,15 @@ public class App extends JFrame implements ActionListener {
 				}
 			}
 		} else if (origen == "Escala") {
-			dibujo.setEscala(JOptionPane.showInputDialog("Introduzca la nueva escala"));
+			String texto = null;
+			try {
+				texto = JOptionPane.showInputDialog("Introduzca la nueva escala");
+				dibujo.setEscala(Integer.parseInt(texto));
+			} catch (Exception ex) {
+				if (texto != null) {
+					JOptionPane.showMessageDialog(this, "Escala inválida", "Error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
 		} else if (origen == "Orientación") {
 			String texto = null;
 			try {

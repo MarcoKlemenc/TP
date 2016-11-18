@@ -50,15 +50,23 @@ public class Piso {
 		habitaciones.remove(h);
 	}
 
-	public boolean eliminarTrayectoria(MouseEvent e, Baldosa b) {
+	public Trayectoria buscarTrayectoria(MouseEvent e, Baldosa b) {
 		for (Trayectoria t : trayectorias) {
 			for (Habitacion h : habitaciones) {
 				if (t.buscar(h, b.getCoordenadas()) && t.getHabitaciones().contains(h)
 						&& h.contiene(e.getX(), e.getY())) {
-					trayectorias.remove(t);
-					return true;
+					return t;
 				}
 			}
+		}
+		return null;
+	}
+
+	public boolean eliminarTrayectoria(MouseEvent e, Baldosa b) {
+		Trayectoria t = buscarTrayectoria(e, b);
+		if (t != null) {
+			trayectorias.remove(t);
+			return true;
 		}
 		return false;
 	}
