@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -18,7 +19,7 @@ class Dibujo extends JComponent {
 	private static final long serialVersionUID = 1L;
 	private Piso piso = new Piso();
 	private Point inicio, fin, trayP;
-	private int desvioX, desvioY, orientacion, modo, escala = 5, borde = 20;
+	private int desvioX, desvioY, orientacion, modo, escala = 5, borde;
 	private Habitacion actual, temp, trayH, seleccionada;
 	private Recorrido orig, dest;
 	private Puerta pActual;
@@ -276,22 +277,25 @@ class Dibujo extends JComponent {
 
 	public void paint(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
+		borde = getWidth() / 40;
+		g2.setFont(new Font("Calibri", Font.PLAIN, (int) (borde / 1.2)));
 		int orientacionVieja = orientacion;
 		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		g2.drawString(String.valueOf(orientacion), getWidth() / 2, 14);
+		g2.drawString(String.valueOf(orientacion), getWidth() / 2, (int) (borde / 1.5));
 		orientacion += (orientacion >= 270) ? -270 : 90;
-		g2.drawString(String.valueOf(orientacion),
-				getWidth() - g2.getFontMetrics().stringWidth(String.valueOf(orientacion)), getHeight() / 2 - 5);
+		drawRotate(g2, getWidth() - g2.getFontMetrics().getHeight() / 2 - 4, getHeight() / 2, 90,
+				String.valueOf(orientacion));
 		orientacion += (orientacion >= 270) ? -270 : 90;
-		g2.drawString(String.valueOf(orientacion), getWidth() / 2, getHeight() - 5);
+		g2.drawString(String.valueOf(orientacion), getWidth() / 2, getHeight() - (int) (borde / 6));
 		orientacion += (orientacion >= 270) ? -270 : 90;
-		g2.drawString(String.valueOf(orientacion), 0, getHeight() / 2 - 5);
+		drawRotate(g2, 0 + g2.getFontMetrics().getHeight() / 2 + 4, getHeight() / 2 - 5, 270,
+				String.valueOf(orientacion));
 		orientacion = orientacionVieja;
 		g2.setPaint(Color.WHITE);
 		g2.fillRect(borde, borde, getWidth() - borde * 2, getHeight() - borde * 2);
 		g2.setPaint(new Color(238, 238, 238));
-		for (int i = -1; i < getWidth(); i += 100) {
-			for (int j = -1; j < getHeight(); j += 100) {
+		for (int i = borde - 1; i < getWidth() - 20; i += 100) {
+			for (int j = borde - 1; j < getHeight() - 20; j += 100) {
 				g2.draw(new Rectangle2D.Float(i, j, 100, 100));
 			}
 		}
@@ -384,8 +388,16 @@ class Dibujo extends JComponent {
 			g2.drawLine(xFin, borde, xFin, getHeight() - borde);
 		}
 		g2.setPaint(Color.BLACK);
-		g2.drawLine(borde, borde, 99, borde);
+		g2.drawLine(borde, borde - 1, borde + 99, borde - 1);
 		g2.drawString(String.valueOf(escala) + " " + unidad, borde, borde - 2);
+	}
+
+	public void drawRotate(Graphics2D g2d, double x, double y, int angle, String text) {
+		g2d.translate((float) x, (float) y);
+		g2d.rotate(Math.toRadians(angle));
+		g2d.drawString(text, 0, 0);
+		g2d.rotate(-Math.toRadians(angle));
+		g2d.translate(-(float) x, -(float) y);
 	}
 
 	public void eliminar() {
