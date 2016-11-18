@@ -15,11 +15,11 @@ public class Piso {
 	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
 
 	public boolean contienePuertaV(Habitacion h1, Habitacion h2, MouseEvent e) {
-		return h1 != h2 && h1.contiene(e.getX() - 3, e.getY() - 1) && h2.contiene(e.getX() + 3, e.getY() - 1);
+		return h1 != h2 && h1.contiene(e.getX() - 5, e.getY()) && h2.contiene(e.getX() + 5, e.getY());
 	}
 
 	public boolean contienePuertaH(Habitacion h1, Habitacion h2, MouseEvent e) {
-		return h1 != h2 && h1.contiene(e.getX() - 1, e.getY() - 3) && h2.contiene(e.getX() - 1, e.getY() + 3);
+		return h1 != h2 && h1.contiene(e.getX(), e.getY() - 5) && h2.contiene(e.getX(), e.getY() + 5);
 	}
 
 	public void agregarHabitacion(Habitacion h) {

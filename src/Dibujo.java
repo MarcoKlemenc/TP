@@ -32,6 +32,15 @@ class Dibujo extends JComponent {
 		App.cambiarModo(modos[modo]);
 	}
 
+	private String darMedida(int valor) {
+		String medida = Integer.toString(valor * escala);
+		medida = new StringBuilder(medida).insert(medida.length() - 2, ".").toString();
+		if (medida.charAt(0) == '.') {
+			medida = new StringBuilder(medida).insert(0, "0").toString();
+		}
+		return medida;
+	}
+
 	private boolean aux(Habitacion h) {
 		return actual.getX() + actual.getLargo() - h.getX() < actual.getY() + actual.getAlto() - h.getY();
 	}
@@ -65,13 +74,13 @@ class Dibujo extends JComponent {
 									&& h1.intersecta(h2)) {
 								int x = Math.min(h1.getX(), h2.getX());
 								int largo = Math.min(h1.getX(), h2.getX()) == h1.getX() ? h1.getLargo() : h2.getLargo();
-								piso.agregarPuerta(x + largo - 3, e.getY(), 7, 30, h1, h2, true);
+								piso.agregarPuerta(x + largo - 5, e.getY(), 11, 30, h1, h2, true);
 								return;
 							} else if ((piso.contienePuertaH(h1, h2, e) || piso.contienePuertaH(h2, h1, e))
 									&& h1.intersecta(h2)) {
 								int y = Math.min(h1.getY(), h2.getY());
 								int alto = Math.min(h1.getY(), h2.getY()) == h1.getY() ? h1.getAlto() : h2.getAlto();
-								piso.agregarPuerta(e.getX(), y + alto - 3, 30, 7, h1, h2, false);
+								piso.agregarPuerta(e.getX(), y + alto - 5, 30, 11, h1, h2, false);
 								return;
 							}
 						}
@@ -254,7 +263,7 @@ class Dibujo extends JComponent {
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				if (seleccionada != null) {
 					int lado = seleccionada.getLado();
-					lado += e.getWheelRotation();
+					lado += e.getWheelRotation() * 4;
 					lado = Math.max(2, lado);
 					lado = Math.min(lado, Math.min(seleccionada.getLargo(), seleccionada.getAlto()));
 					seleccionada.setLado(lado);
@@ -336,14 +345,10 @@ class Dibujo extends JComponent {
 			g2.setPaint(new Color(0, 192, 0, 128));
 			g2.fill(seleccionada.getInterior());
 			g2.setPaint(Color.BLACK);
-			String largo = Integer.toString(seleccionada.getLargo() * escala);
-			largo = new StringBuilder(largo).insert(largo.length() - 2, ".").toString();
-			String alto = Integer.toString(seleccionada.getAlto() * escala);
-			alto = new StringBuilder(alto).insert(alto.length() - 2, ".").toString();
-			String lado = Integer.toString(seleccionada.getLado() * escala);
-			lado = new StringBuilder(lado).insert(lado.length() - 2, ".").toString();
-			g2.drawString("Largo: " + largo + " m - Alto: " + alto + " m - Lado de baldosa: " + lado + " m", 20,
-					getHeight() - 5);
+			g2.drawString(
+					"Largo: " + darMedida(seleccionada.getLargo()) + " m - Alto: " + darMedida(seleccionada.getAlto())
+							+ " m - Lado de baldosa: " + darMedida(seleccionada.getLado()) + " m",
+					20, getHeight() - 5);
 		}
 		if (trayP != null && piso.getHabitaciones().contains(trayH)) {
 			g2.setPaint(new Color(192, 192, 192, 128));
