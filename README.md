@@ -40,4 +40,4 @@ Esta aplicación, al ser un prototipo, presenta algunas limitaciones en cuanto a 
 * El tamaño del piso no puede ser mayor al de la pantalla.
 * Pueden surgir problemas al querer acercar una habitación con otra desde la izquierda o arriba. Esto se puede ver cuando la habitación "salta" para anexarse a una de las esquinas de la otra.
 * Las trayectorias pueden recorrer más de una habitación, pero no más de 3.
-* Las trayectorias no siempre toman el mejor camino o un buen camino. Puede ser que utilice más de una baldosa cerca de las puertas, que pase por encima de algún obstáculo o que directamente no pueda encontrar una trayectoria. Además, las trayectorias no se guardan en una estructura de grafo, por lo que tampoco se puede aplicar ningún algoritmo de optimización sobre las mismas.
+* Las trayectorias no siempre toman el mejor camino, y en algunos casos a la aplicación le es imposible encontrar uno.

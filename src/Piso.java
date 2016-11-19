@@ -111,11 +111,13 @@ public class Piso {
 							if (b.contiene(p)) {
 								t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), b.getFila(),
 										b.getColumna());
+								break;
 							}
 						}
 						for (Baldosa b : h3.getBaldosas()) {
 							if (b.contiene(p)) {
 								inicioTemp = b;
+								break;
 							}
 						}
 					}
@@ -126,12 +128,14 @@ public class Piso {
 							if (b.contiene(p)) {
 								t.anexar(h3.generarTrayectoria(inicioTemp.getFila(), inicioTemp.getColumna(),
 										b.getFila(), b.getColumna()));
+								break;
 							}
 						}
 						for (Baldosa b : h2.getBaldosas()) {
 							if (b.contiene(p)) {
 								t.anexar(h2.generarTrayectoria(b.getFila(), b.getColumna(), dest.getFila(),
 										dest.getColumna()));
+								break;
 							}
 						}
 					}
@@ -171,7 +175,7 @@ public class Piso {
 
 	public Habitacion baldosaDentro(Baldosa b) {
 		for (Habitacion h : habitaciones) {
-			if (h.contieneB(b)) {
+			if (h.contieneBaldosa(b)) {
 				return h;
 			}
 		}

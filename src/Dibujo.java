@@ -18,18 +18,19 @@ class Dibujo extends JComponent {
 
 	private static final long serialVersionUID = 1L;
 	private Piso piso = new Piso();
-	private Point inicio, fin, trayP;
-	private int desvioX, desvioY, orientacion, modo, escala = 5, borde;
-	private Habitacion actual, temp, trayH, seleccionada;
+	private Point inicio, fin, puntoOrig;
+	private Puerta puertaActual;
+	private int desvioX, desvioY, orientacion, modo, escala = 5, borde = 20, grilla = 100;
+	private Habitacion actual, temp, habitacionOrig, seleccionada;
 	private Recorrido orig, dest;
-	private Puerta pActual;
 	private String unidad = "m";
-	private String[] modos;
+	private String[] modos = { "habitación", "trayectoria", "obstáculo" };
 	private Trayectoria frente;
 
-	public void cambiarModo() {
-		modo += (modo == 2) ? -2 : 1;
-		App.cambiarModo(modos[modo]);
+	public String cambiarModo() {
+		seleccionada = null;
+		frente = null;
+		return modos[modo += (modo == 2) ? -2 : 1];
 	}
 
 	private String darMedida(int valor) {
@@ -47,12 +48,6 @@ class Dibujo extends JComponent {
 
 	public Dibujo() {
 
-		modos = new String[3];
-		modos[0] = "habitación";
-		modos[1] = "trayectoria";
-		modos[2] = "obstáculo";
-		this.setFocusable(true);
-
 		this.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {
@@ -63,7 +58,10 @@ class Dibujo extends JComponent {
 					repaint();
 					return;
 				}
-				seleccionada = null;
+				if (l.size() == 0) {
+					seleccionada = null;
+					frente = null;
+				}
 				Puerta p = piso.contieneP(e);
 				if (p != null) {
 					piso.eliminarPuerta(p);
@@ -73,20 +71,24 @@ class Dibujo extends JComponent {
 							if ((piso.contienePuertaV(h1, h2, e) || piso.contienePuertaV(h2, h1, e))
 									&& h1.intersecta(h2)) {
 								int x = Math.min(h1.getX(), h2.getX());
-								int largo = Math.min(h1.getX(), h2.getX()) == h1.getX() ? h1.getLargo() : h2.getLargo();
-								piso.agregarPuerta(x + largo - 5, e.getY(), 11, 30, h1, h2, true);
+								piso.agregarPuerta(x + (x == h1.getX() ? h1.getLargo() : h2.getLargo()) - 5, e.getY(),
+										11, Math.min(30, Math.min(h1.getY() + h1.getAlto(), h2.getY() + h2.getAlto())
+												- e.getY()),
+										h1, h2, true);
 								return;
 							} else if ((piso.contienePuertaH(h1, h2, e) || piso.contienePuertaH(h2, h1, e))
 									&& h1.intersecta(h2)) {
 								int y = Math.min(h1.getY(), h2.getY());
-								int alto = Math.min(h1.getY(), h2.getY()) == h1.getY() ? h1.getAlto() : h2.getAlto();
-								piso.agregarPuerta(e.getX(), y + alto - 5, 30, 11, h1, h2, false);
+								piso.agregarPuerta(e.getX(), y + (y == h1.getY() ? h1.getAlto() : h2.getAlto()) - 5,
+										Math.min(30, Math.min(h1.getX() + h1.getLargo(), h2.getX() + h2.getLargo())
+												- e.getY()),
+										11, h1, h2, false);
 								return;
 							}
 						}
 					}
 					actual = l.get(0);
-					Baldosa b = actual.contieneB(e);
+					Baldosa b = actual.contieneBaldosa(e);
 					if (modo == 0) {
 						seleccionada = l.get(0);
 					} else if (modo == 1) {
@@ -96,17 +98,16 @@ class Dibujo extends JComponent {
 								piso.generarTrayectoria(orig, dest);
 							}
 							orig = null;
-							trayP = null;
-							trayH = null;
+							puntoOrig = null;
+							habitacionOrig = null;
 						} else if (b.isPasar()) {
 							Trayectoria seleccion = piso.buscarTrayectoria(e, b);
 							if (seleccion == null) {
 								orig = new Recorrido(piso.baldosaDentro(b), b.getCoordenadas());
-								trayP = new Point(b.getFila(), b.getColumna());
-								trayH = actual;
+								puntoOrig = new Point(b.getFila(), b.getColumna());
+								habitacionOrig = actual;
 							}
-							if (frente == seleccion
-									|| seleccion == piso.getTrayectorias().get(piso.getTrayectorias().size() - 1)) {
+							if (frente == seleccion) {
 								piso.eliminarTrayectoria(e, b);
 								frente = null;
 							} else {
@@ -122,10 +123,10 @@ class Dibujo extends JComponent {
 								}
 							}
 						}
-						if (b.getCoordenadas().equals(trayP)) {
+						if (b.getCoordenadas().equals(puntoOrig)) {
 							orig = null;
-							trayP = null;
-							trayH = null;
+							puntoOrig = null;
+							habitacionOrig = null;
 						}
 						b.cambiarPasar();
 					}
@@ -139,8 +140,8 @@ class Dibujo extends JComponent {
 					seleccionada = null;
 					actual = null;
 				}
-				pActual = piso.contieneP(e);
-				if (pActual == null) {
+				puertaActual = piso.contieneP(e);
+				if (puertaActual == null) {
 					if (l.size() == 1) {
 						actual = l.get(0);
 						desvioX = e.getX() - actual.getX();
@@ -155,8 +156,7 @@ class Dibujo extends JComponent {
 			public void mouseReleased(MouseEvent e) {
 				if (actual == null && temp != null && temp.getLargo() >= 2 && temp.getAlto() >= 2
 						&& piso.cruza(temp).size() == 0) {
-					piso.agregarHabitacion(new Habitacion(temp.getX(), temp.getY(), temp.getLargo(), temp.getAlto(),
-							Math.min(temp.getAlto(), temp.getLargo()) / 4 + 1));
+					piso.agregarHabitacion(temp);
 				}
 				inicio = null;
 				fin = null;
@@ -165,24 +165,25 @@ class Dibujo extends JComponent {
 				repaint();
 			}
 		});
+
 		this.addMouseMotionListener(new MouseMotionAdapter() {
 
 			public void mouseDragged(MouseEvent e) {
-				if (pActual != null) {
-					Habitacion h1 = pActual.getH1();
-					Habitacion h2 = pActual.getH2();
-					if (pActual.isVertical()) {
-						int alto = e.getY() - pActual.getY();
+				if (puertaActual != null) {
+					Habitacion h1 = puertaActual.getH1();
+					Habitacion h2 = puertaActual.getH2();
+					if (puertaActual.isVertical()) {
+						int alto = e.getY() - puertaActual.getY();
 						alto = Math.max(2, alto);
 						alto = Math.min(alto,
-								Math.min(h1.getY() + h1.getAlto(), h2.getY() + h2.getAlto()) - pActual.getY());
-						pActual.setAlto(alto);
+								Math.min(h1.getY() + h1.getAlto(), h2.getY() + h2.getAlto()) - puertaActual.getY());
+						puertaActual.setAlto(alto);
 					} else {
-						int largo = e.getX() - pActual.getX();
+						int largo = e.getX() - puertaActual.getX();
 						largo = Math.max(2, largo);
 						largo = Math.min(largo,
-								Math.min(h1.getX() + h1.getLargo(), h2.getX() + h2.getLargo()) - pActual.getX());
-						pActual.setLargo(largo);
+								Math.min(h1.getX() + h1.getLargo(), h2.getX() + h2.getLargo()) - puertaActual.getX());
+						puertaActual.setLargo(largo);
 					}
 				}
 				if (actual == null) {
@@ -250,7 +251,6 @@ class Dibujo extends JComponent {
 								}
 							}
 						}
-
 					}
 					actual.generarBaldosas();
 				}
@@ -262,46 +262,36 @@ class Dibujo extends JComponent {
 
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				if (seleccionada != null) {
-					int lado = seleccionada.getLado();
-					lado += e.getWheelRotation() * 4;
-					lado = Math.max(2, lado);
-					lado = Math.min(lado, Math.min(seleccionada.getLargo(), seleccionada.getAlto()));
-					seleccionada.setLado(lado);
+					seleccionada.setLado(Math.max(2, Math.min(seleccionada.getLado() + e.getWheelRotation() * 4,
+							Math.min(seleccionada.getLargo(), seleccionada.getAlto()))));
 					seleccionada.generarBaldosas();
+				} else if (e.getX() <= borde || e.getY() <= borde) {
+					borde = Math.max(0,
+							Math.min(borde + e.getWheelRotation() * 2, Math.min(getWidth(), getHeight()) / 3));
+				} else {
+					grilla = Math.max(2,
+							Math.min(grilla + e.getWheelRotation() * 2, Math.min(getWidth(), getHeight()) / 3));
 				}
 				repaint();
 			}
-
 		});
 	}
 
 	public void paint(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
-		borde = getWidth() / 40;
-		g2.setFont(new Font("Calibri", Font.PLAIN, (int) (borde / 1.2)));
-		int orientacionVieja = orientacion;
 		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		g2.drawString(String.valueOf(orientacion), getWidth() / 2, (int) (borde / 1.5));
-		orientacion += (orientacion >= 270) ? -270 : 90;
-		drawRotate(g2, getWidth() - g2.getFontMetrics().getHeight() / 2 - 4, getHeight() / 2, 90,
-				String.valueOf(orientacion));
-		orientacion += (orientacion >= 270) ? -270 : 90;
-		g2.drawString(String.valueOf(orientacion), getWidth() / 2, getHeight() - (int) (borde / 6));
-		orientacion += (orientacion >= 270) ? -270 : 90;
-		drawRotate(g2, 0 + g2.getFontMetrics().getHeight() / 2 + 4, getHeight() / 2 - 5, 270,
-				String.valueOf(orientacion));
-		orientacion = orientacionVieja;
+		g2.setFont(new Font("Calibri", Font.PLAIN, (int) (borde / 1.2)));
 		g2.setPaint(Color.WHITE);
 		g2.fillRect(borde, borde, getWidth() - borde * 2, getHeight() - borde * 2);
 		g2.setPaint(new Color(238, 238, 238));
-		for (int i = borde - 1; i < getWidth() - 20; i += 100) {
-			for (int j = borde - 1; j < getHeight() - 20; j += 100) {
-				g2.draw(new Rectangle2D.Float(i, j, 100, 100));
+		for (int i = borde - 1; i < getWidth() - borde; i += grilla) {
+			for (int j = borde - 1; j < getHeight() - borde; j += grilla) {
+				g2.draw(new Rectangle2D.Float(i, j, grilla, grilla));
 			}
 		}
-		Color[] colores = { Color.CYAN, Color.BLUE, Color.GREEN, Color.ORANGE, Color.RED, Color.MAGENTA, Color.PINK,
-				Color.YELLOW };
-		int col = -1;
+		Color[] colores = { Color.BLUE, Color.CYAN, Color.GREEN, Color.YELLOW, Color.ORANGE, Color.RED, Color.PINK,
+				Color.MAGENTA };
+		int color = -1;
 		int colorFrente = -1;
 		for (Habitacion h : piso.getHabitaciones()) {
 			g2.setPaint(new Color(160, 160, 160));
@@ -317,7 +307,7 @@ class Dibujo extends JComponent {
 		}
 		List<Trayectoria> tt = new ArrayList<Trayectoria>();
 		for (Trayectoria t : piso.getTrayectorias()) {
-			g2.setPaint(colores[col += (col == 7) ? -7 : 1]);
+			g2.setPaint(colores[color += (color == 7) ? -7 : 1]);
 			if (frente != t) {
 				for (Recorrido r : t.getCamino()) {
 					Point p = r.getCoordenadas();
@@ -329,16 +319,20 @@ class Dibujo extends JComponent {
 					}
 				}
 			} else {
-				colorFrente = col;
+				colorFrente = color;
 			}
 		}
 		if (frente != null) {
-			g2.setPaint(colores[colorFrente]);
 			for (Recorrido r : frente.getCamino()) {
 				Point p = r.getCoordenadas();
 				Baldosa b = r.getHabitacion().obtenerBaldosa(p.getX(), p.getY());
 				if (b != null) {
+					g2.setPaint(colores[colorFrente]);
 					g2.fill(b.getInterior());
+					g2.setPaint(Color.WHITE);
+					g2.draw(b.getForma());
+					g2.drawLine(b.getX(), b.getY(), b.getX() + b.getLargo(), b.getY() + b.getAlto());
+					g2.drawLine(b.getX() + b.getLargo(), b.getY(), b.getX(), b.getY() + b.getAlto());
 				} else {
 					tt.add(frente);
 				}
@@ -350,17 +344,17 @@ class Dibujo extends JComponent {
 			g2.fill(seleccionada.getInterior());
 			g2.setPaint(Color.BLACK);
 			g2.drawString("Largo: " + darMedida(seleccionada.getLargo()) + " - Alto: "
-					+ darMedida(seleccionada.getAlto()) + " - Lado de baldosa: " + darMedida(seleccionada.getLado()),
-					20, getHeight() - 5);
+					+ darMedida(seleccionada.getAlto()) + " - Baldosas: " + darMedida(seleccionada.getLado()), 20,
+					getHeight() - 5);
 		}
-		if (trayP != null && piso.getHabitaciones().contains(trayH)) {
-			g2.setPaint(new Color(192, 192, 192, 128));
-			Baldosa b = trayH.obtenerBaldosa(trayP.getX(), trayP.getY());
+		if (puntoOrig != null && piso.getHabitaciones().contains(habitacionOrig)) {
+			Baldosa b = habitacionOrig.obtenerBaldosa(puntoOrig.getX(), puntoOrig.getY());
 			if (b != null) {
+				g2.setPaint(new Color(192, 192, 192, 128));
 				g2.fill(b.getForma());
 			} else {
-				trayH = null;
-				trayP = null;
+				habitacionOrig = null;
+				puntoOrig = null;
 			}
 		}
 		for (Puerta p : piso.getPuertas()) {
@@ -369,35 +363,31 @@ class Dibujo extends JComponent {
 		}
 		if (inicio != null && fin != null) {
 			g2.setPaint(Color.BLACK);
-			temp = new Habitacion(Math.min(inicio.x, fin.x), Math.min(inicio.y, fin.y), Math.abs(inicio.x - fin.x),
-					Math.abs(inicio.y - fin.y),
-					Math.min(Math.abs(inicio.x - fin.x), Math.abs(inicio.y - fin.y)) / 4 + 1);
+			int largo = Math.abs(inicio.x - fin.x);
+			int alto = Math.abs(inicio.y - fin.y);
+			temp = new Habitacion(Math.min(inicio.x, fin.x), Math.min(inicio.y, fin.y), largo, alto,
+					Math.min(largo, alto) / 4 + 1);
 			g2.draw(temp.getForma());
 			g2.setPaint(piso.cruza(temp).size() != 0 ? new Color(255, 0, 0, 64) : new Color(0, 255, 0, 32));
 			g2.fill(temp.getForma());
 		}
-		if (seleccionada != null) {
-			g2.setPaint(Color.BLUE);
-			int x = seleccionada.getX();
-			int y = seleccionada.getY();
-			int xFin = seleccionada.getX() + seleccionada.getLargo();
-			int yFin = seleccionada.getY() + seleccionada.getAlto();
-			g2.drawLine(borde, y, getWidth() - borde, y);
-			g2.drawLine(borde, yFin, getWidth() - borde, yFin);
-			g2.drawLine(x, borde, x, getHeight() - borde);
-			g2.drawLine(xFin, borde, xFin, getHeight() - borde);
-		}
 		g2.setPaint(Color.BLACK);
-		g2.drawLine(borde, borde - 1, borde + 99, borde - 1);
+		g2.drawLine(borde, borde - 1, borde + grilla - 1, borde - 1);
 		g2.drawString(String.valueOf(escala) + " " + unidad, borde, borde - 2);
+		int altura = g2.getFontMetrics().getHeight() / 2;
+		escribirOrientacion(g2, getWidth() / 2, (int) (borde / 1.5), 0);
+		escribirOrientacion(g2, getWidth() - altura - 4, getHeight() / 2, 90);
+		escribirOrientacion(g2, getWidth() / 2, getHeight() - (int) (borde / 6), 0);
+		escribirOrientacion(g2, altura + 4, getHeight() / 2 - 5, 270);
 	}
 
-	public void drawRotate(Graphics2D g2d, double x, double y, int angle, String text) {
-		g2d.translate((float) x, (float) y);
-		g2d.rotate(Math.toRadians(angle));
-		g2d.drawString(text, 0, 0);
-		g2d.rotate(-Math.toRadians(angle));
-		g2d.translate(-(float) x, -(float) y);
+	private void escribirOrientacion(Graphics2D g2, int x, int y, int angulo) {
+		g2.translate(x, y);
+		g2.rotate(Math.toRadians(angulo));
+		g2.drawString(String.valueOf(orientacion), 0, 0);
+		g2.rotate(-Math.toRadians(angulo));
+		g2.translate(-x, -y);
+		orientacion += (orientacion >= 270) ? -270 : 90;
 	}
 
 	public void eliminar() {
@@ -405,8 +395,8 @@ class Dibujo extends JComponent {
 		orientacion = 0;
 		escala = 5;
 		unidad = "m";
-		trayP = null;
-		trayH = null;
+		puntoOrig = null;
+		habitacionOrig = null;
 		orig = null;
 		actual = null;
 		seleccionada = null;
@@ -445,11 +435,11 @@ class Dibujo extends JComponent {
 	}
 
 	public Point getTrayP() {
-		return trayP;
+		return puntoOrig;
 	}
 
 	public void setTrayP(Point trayP) {
-		this.trayP = trayP;
+		this.puntoOrig = trayP;
 	}
 
 	public Habitacion getActual() {
@@ -461,11 +451,11 @@ class Dibujo extends JComponent {
 	}
 
 	public Habitacion getTrayH() {
-		return trayH;
+		return habitacionOrig;
 	}
 
 	public void setTrayH(Habitacion trayH) {
-		this.trayH = trayH;
+		this.habitacionOrig = trayH;
 	}
 
 	public Recorrido getOrig() {
@@ -483,5 +473,4 @@ class Dibujo extends JComponent {
 	public void setUnidad(String unidad) {
 		this.unidad = unidad;
 	}
-
 }

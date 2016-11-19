@@ -37,7 +37,7 @@ public class Habitacion extends Componente {
 		return columnas;
 	}
 
-	public boolean contieneB(Baldosa b) {
+	public boolean contieneBaldosa(Baldosa b) {
 		for (Baldosa b1 : baldosas) {
 			if (b == b1) {
 				return true;
@@ -46,7 +46,7 @@ public class Habitacion extends Componente {
 		return false;
 	}
 
-	public Baldosa contieneB(MouseEvent e) {
+	public Baldosa contieneBaldosa(MouseEvent e) {
 		for (Baldosa b : baldosas) {
 			if (b.contiene(e.getX(), e.getY())) {
 				return b;
@@ -83,7 +83,7 @@ public class Habitacion extends Componente {
 		return !a.isEmpty();
 	}
 
-	Rectangle2D getColision() {
+	public Rectangle2D getColision() {
 		return new Rectangle2D.Float(x, y, largo + 1, alto + 1);
 	}
 

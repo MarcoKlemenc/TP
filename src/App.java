@@ -21,7 +21,6 @@ public class App extends JFrame implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	private Dibujo dibujo = new Dibujo();
 	private String nombre = null;
-	private static App instance;
 
 	private void abrir() {
 		if (nombre != null) {
@@ -102,9 +101,9 @@ public class App extends JFrame implements ActionListener {
 			ListIterator<Habitacion> i = dibujo.getPiso().getHabitaciones().listIterator();
 			String export = dibujo.getEscala() + "|" + dibujo.getUnidad() + "|" + dibujo.getOrientacion() + "|";
 			while (i.hasNext()) {
-				Habitacion area = i.next();
-				export += area.toString();
-				ListIterator<Point> it = area.getNoPasar().listIterator();
+				Habitacion h = i.next();
+				export += h.toString();
+				ListIterator<Point> it = h.getNoPasar().listIterator();
 				if (!it.hasNext()) {
 					export += "!";
 				}
@@ -165,21 +164,21 @@ public class App extends JFrame implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		String origen = ((JMenuItem) e.getSource()).getText();
-		if (origen == "Nuevo") {
+		String opcion = ((JMenuItem) e.getSource()).getText();
+		if (opcion == "Nuevo") {
 			dibujo.eliminar();
-		} else if (origen == "Abrir") {
+		} else if (opcion == "Abrir") {
 			nombre = Archivo.abrir(".txt");
 			abrir();
-		} else if (origen == "Guardar") {
+		} else if (opcion == "Guardar") {
 			if (nombre == null) {
 				nombre = Archivo.guardar(".txt");
 			}
 			guardar();
-		} else if (origen == "Guardar como") {
+		} else if (opcion == "Guardar como") {
 			nombre = Archivo.guardar(".txt");
 			guardar();
-		} else if (origen == "Exportar") {
+		} else if (opcion == "Exportar") {
 			String archivo = Archivo.guardar(".jpg");
 			if (archivo != null) {
 				BufferedImage image = new BufferedImage(getContentPane().getWidth(), getContentPane().getHeight(),
@@ -191,7 +190,7 @@ public class App extends JFrame implements ActionListener {
 					JOptionPane.showMessageDialog(this, "Acceso denegado", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
-		} else if (origen == "Escala") {
+		} else if (opcion == "Escala") {
 			String texto = null;
 			try {
 				texto = JOptionPane.showInputDialog("Introduzca la nueva escala");
@@ -207,7 +206,7 @@ public class App extends JFrame implements ActionListener {
 					JOptionPane.showMessageDialog(this, "Escala inválida", "Error", JOptionPane.ERROR_MESSAGE);
 				}
 			}
-		} else if (origen == "Orientación") {
+		} else if (opcion == "Orientación") {
 			String texto = null;
 			try {
 				texto = JOptionPane.showInputDialog("Introduzca la nueva orientación");
@@ -218,7 +217,7 @@ public class App extends JFrame implements ActionListener {
 				}
 			}
 		} else {
-			dibujo.cambiarModo();
+			setTitle("Modo actual: " + dibujo.cambiarModo());
 		}
 		dibujo.repaint();
 	}
@@ -232,12 +231,7 @@ public class App extends JFrame implements ActionListener {
 		setVisible(true);
 	}
 
-	public static void cambiarModo(String modo) {
-		instance.setTitle("Modo actual: " + modo);
-	}
-
 	public static void main(String[] args) {
-		instance = new App();
+		new App();
 	}
-
 }
