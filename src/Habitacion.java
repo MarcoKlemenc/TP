@@ -126,31 +126,29 @@ public class Habitacion extends Componente {
 					columnaA -= Math.signum(columnaA - columnaB);
 				}
 			} else {
-				if (columnaA > 1 && obtenerBaldosa(filaA, columnaA - 1).isPasar()) {
-					columnaA--;
-					while (!obtenerBaldosa(filaA, columnaA + 1).isPasar()) {
-						t.agregarBaldosa(this, filaA, columnaA);
-						if (filaA > 1) {
-							filaA--;
-						} else {
-							filaA++;
-						}
+				if (obtenerBaldosa(filaA, columnaA - 1).isPasar()) {
+					while (obtenerBaldosa(filaA, columnaA - 1).isPasar()
+							&& !obtenerBaldosa(filaA, columnaA).isPasar()) {
+						t.agregarBaldosa(this, filaA, columnaA - 1);
+						filaA--;
 					}
 				} else if (obtenerBaldosa(filaA - 1, columnaA).isPasar()) {
-					filaA--;
-					while (!obtenerBaldosa(filaA + 1, columnaA).isPasar()) {
-						t.agregarBaldosa(this, filaA, columnaA);
+					while (obtenerBaldosa(filaA - 1, columnaA).isPasar()
+							&& !obtenerBaldosa(filaA, columnaA).isPasar()) {
+						t.agregarBaldosa(this, filaA - 1, columnaA);
 						columnaA++;
 					}
-				} else {
-					if (filaA > 1 && obtenerBaldosa(filaA - 1, columnaA).isPasar()) {
-						filaA--;
-					} else if (filaA < alto / lado && obtenerBaldosa(filaA + 1, columnaA).isPasar()) {
+				} else if (obtenerBaldosa(filaA, columnaA + 1).isPasar()) {
+					while (obtenerBaldosa(filaA, columnaA + 1).isPasar()
+							&& !obtenerBaldosa(filaA, columnaA).isPasar()) {
+						t.agregarBaldosa(this, filaA, columnaA + 1);
 						filaA++;
-					} else if (columnaA > 1 && obtenerBaldosa(filaA, columnaA - 1).isPasar()) {
+					}
+				} else if (obtenerBaldosa(filaA + 1, columnaA).isPasar()) {
+					while (obtenerBaldosa(filaA + 1, columnaA).isPasar()
+							&& !obtenerBaldosa(filaA, columnaA).isPasar()) {
+						t.agregarBaldosa(this, filaA + 1, columnaA);
 						columnaA--;
-					} else if (columnaA < largo / lado && obtenerBaldosa(filaA, columnaA + 1).isPasar()) {
-						columnaA++;
 					}
 				}
 			}
