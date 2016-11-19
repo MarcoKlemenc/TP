@@ -17,6 +17,26 @@ public class Habitacion extends Componente {
 		id = idActual++;
 	}
 
+	private boolean pasarPor(int filaA, int columnaA) {
+		return obtenerBaldosa(filaA, columnaA) != null && obtenerBaldosa(filaA, columnaA).isPasar();
+	}
+
+	private int getFilas() {
+		int filas = 0;
+		for (Baldosa b : baldosas) {
+			filas = Math.max(b.getFila(), filas);
+		}
+		return filas;
+	}
+
+	private int getColumnas() {
+		int columnas = 0;
+		for (Baldosa b : baldosas) {
+			columnas = Math.max(b.getColumna(), columnas);
+		}
+		return columnas;
+	}
+
 	public boolean contieneB(Baldosa b) {
 		for (Baldosa b1 : baldosas) {
 			if (b == b1) {
@@ -112,53 +132,59 @@ public class Habitacion extends Componente {
 	}
 
 	public Trayectoria generarTrayectoria(int filaA, int columnaA, int filaB, int columnaB) {
-		int filaAnterior = -1;
-		int columnaAnterior = -1;
-		Trayectoria t = new Trayectoria();
-		while (filaA != filaB || columnaA != columnaB) {
-			Baldosa b = obtenerBaldosa(filaA, columnaA);
-			if (b.isPasar()) {
-				filaAnterior = filaA;
-				columnaAnterior = columnaA;
-				t.agregarBaldosa(this, filaA, columnaA);
-				if (Math.abs(filaA - filaB) > Math.abs(columnaA - columnaB)) {
-					filaA -= Math.signum(filaA - filaB);
-				} else if (Math.abs(filaA - filaB) < Math.abs(columnaA - columnaB)) {
-					columnaA -= Math.signum(columnaA - columnaB);
+		int filaInicial = filaA;
+		int columnaInicial = columnaA;
+		try {
+			int filaAnterior = -1;
+			int columnaAnterior = -1;
+			int filas = getFilas();
+			int columnas = getColumnas();
+			Trayectoria t = new Trayectoria();
+			while (filaA != filaB || columnaA != columnaB) {
+				Baldosa b = obtenerBaldosa(filaA, columnaA);
+				if (b.isPasar()) {
+					filaAnterior = filaA;
+					columnaAnterior = columnaA;
+					t.agregarBaldosa(this, filaA, columnaA);
+					if (Math.abs(filaA - filaB) > Math.abs(columnaA - columnaB)) {
+						filaA -= Math.signum(filaA - filaB);
+					} else if (Math.abs(filaA - filaB) < Math.abs(columnaA - columnaB)) {
+						columnaA -= Math.signum(columnaA - columnaB);
+					} else {
+						filaA -= Math.signum(filaA - filaB);
+						columnaA -= Math.signum(columnaA - columnaB);
+					}
 				} else {
-					filaA -= Math.signum(filaA - filaB);
-					columnaA -= Math.signum(columnaA - columnaB);
-				}
-			} else {
-				if (obtenerBaldosa(filaA, columnaA - 1).isPasar() && columnaAnterior == columnaA - 1) {
-					while (obtenerBaldosa(filaA, columnaA - 1).isPasar()
-							&& !obtenerBaldosa(filaA, columnaA).isPasar()) {
-						t.agregarBaldosa(this, filaA, columnaA - 1);
-						filaA--;
-					}
-				} else if (obtenerBaldosa(filaA - 1, columnaA).isPasar() && filaAnterior == filaA - 1) {
-					while (obtenerBaldosa(filaA - 1, columnaA).isPasar()
-							&& !obtenerBaldosa(filaA, columnaA).isPasar()) {
-						t.agregarBaldosa(this, filaA - 1, columnaA);
-						columnaA++;
-					}
-				} else if (obtenerBaldosa(filaA, columnaA + 1).isPasar() && columnaAnterior == columnaA + 1) {
-					while (obtenerBaldosa(filaA, columnaA + 1).isPasar()
-							&& !obtenerBaldosa(filaA, columnaA).isPasar()) {
-						t.agregarBaldosa(this, filaA, columnaA + 1);
-						filaA++;
-					}
-				} else if (obtenerBaldosa(filaA + 1, columnaA).isPasar() && filaAnterior == filaA + 1) {
-					while (obtenerBaldosa(filaA + 1, columnaA).isPasar()
-							&& !obtenerBaldosa(filaA, columnaA).isPasar()) {
-						t.agregarBaldosa(this, filaA + 1, columnaA);
-						columnaA--;
+					if (pasarPor(filaA, columnaA - 1) && columnaAnterior == columnaA - 1) {
+						while (pasarPor(filaA, columnaA - 1) && !obtenerBaldosa(filaA, columnaA).isPasar()) {
+							t.agregarBaldosa(this, filaA, columnaA - 1);
+							filaA += (filaAnterior > 1) ? -1 : 1;
+						}
+					} else if (pasarPor(filaA - 1, columnaA) && filaAnterior == filaA - 1) {
+						while (pasarPor(filaA - 1, columnaA) && !obtenerBaldosa(filaA, columnaA).isPasar()) {
+							t.agregarBaldosa(this, filaA - 1, columnaA);
+							columnaA += (columnaAnterior < columnas) ? 1 : -1;
+						}
+					} else if (pasarPor(filaA, columnaA + 1) && columnaAnterior == columnaA + 1) {
+						while (pasarPor(filaA, columnaA + 1) && !obtenerBaldosa(filaA, columnaA).isPasar()) {
+							t.agregarBaldosa(this, filaA, columnaA + 1);
+							filaA += (filaAnterior < filas) ? 1 : -1;
+						}
+					} else if (pasarPor(filaA + 1, columnaA) && filaAnterior == filaA + 1) {
+						while (pasarPor(filaA + 1, columnaA) && !obtenerBaldosa(filaA, columnaA).isPasar()) {
+							t.agregarBaldosa(this, filaA + 1, columnaA);
+							columnaA += (columnaAnterior > 1) ? -1 : 1;
+						}
 					}
 				}
 			}
+			if (pasarPor(filaA, columnaA)) {
+				t.agregarBaldosa(this, filaA, columnaA);
+			}
+			return t;
+		} catch (Exception e) {
+			return generarTrayectoria(filaB, columnaB, filaInicial, columnaInicial);
 		}
-		t.agregarBaldosa(this, filaA, columnaA);
-		return t;
 	}
 
 	public List<Baldosa> getBaldosas() {
