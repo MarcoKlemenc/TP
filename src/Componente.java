@@ -1,8 +1,19 @@
 import java.awt.geom.Rectangle2D;
+import java.util.StringTokenizer;
 
 public class Componente {
 
 	protected int x, y, largo, alto;
+
+	public Componente(StringTokenizer s) {
+		if (this instanceof Habitacion) {
+			Habitacion.setIdActual(Integer.parseInt(s.nextToken()));
+		}
+		this.x = Integer.parseInt(s.nextToken());
+		this.y = Integer.parseInt(s.nextToken());
+		this.largo = Integer.parseInt(s.nextToken());
+		this.alto = Integer.parseInt(s.nextToken());
+	}
 
 	public Componente(int x, int y, int largo, int alto) {
 		this.x = x;

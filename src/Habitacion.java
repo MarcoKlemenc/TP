@@ -4,6 +4,7 @@ import java.awt.geom.Area;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 public class Habitacion extends Componente {
 
@@ -11,10 +12,18 @@ public class Habitacion extends Componente {
 	private int id, lado;
 	private List<Baldosa> baldosas;
 
+	public Habitacion(StringTokenizer s) {
+		super(s);
+		this.lado = Integer.parseInt(s.nextToken());
+		id = idActual++;
+		generarBaldosas(new StringTokenizer(s.nextToken(), "&"));
+	}
+
 	public Habitacion(int x, int y, int largo, int alto, int lado) {
 		super(x, y, largo, alto);
 		this.lado = lado;
 		id = idActual++;
+		generarBaldosas();
 	}
 
 	private boolean pasarPor(int filaA, int columnaA) {
@@ -55,16 +64,16 @@ public class Habitacion extends Componente {
 		return null;
 	}
 
-	public List<Point> getNoPasar() {
-		List<Point> noPasar = new ArrayList<Point>();
+	private List<Point> getObstaculos() {
+		List<Point> obstaculos = new ArrayList<Point>();
 		if (baldosas != null) {
 			for (Baldosa b : baldosas) {
 				if (!b.isPasar()) {
-					noPasar.add(b.getCoordenadas());
+					obstaculos.add(b.getCoordenadas());
 				}
 			}
 		}
-		return noPasar;
+		return obstaculos;
 	}
 
 	public boolean intersecta(Habitacion h) {
@@ -103,22 +112,34 @@ public class Habitacion extends Componente {
 		return new Rectangle2D.Float(x, y + alto, largo, 1);
 	}
 
-	public void generarBaldosas() {
-		List<Point> noPasar = getNoPasar();
-		this.baldosas = new ArrayList<Baldosa>();
+	private void crearBaldosas() {
+		baldosas = new ArrayList<Baldosa>();
 		int columna = 1;
 		for (int i = x; i < x + largo; i += lado) {
 			int fila = 1;
 			for (int j = y; j < y + alto; j += lado) {
 				Baldosa b = new Baldosa(i, j, Math.min(x + largo - i, lado), Math.min(y + alto - j, lado), fila,
 						columna);
-				if (noPasar.contains(b.getCoordenadas())) {
-					b.cambiarPasar();
-				}
 				baldosas.add(b);
 				fila++;
 			}
 			columna++;
+		}
+	}
+
+	public void generarBaldosas(StringTokenizer s) {
+		crearBaldosas();
+		if (s.countTokens() > 1) {
+			while (s.hasMoreTokens()) {
+				obtenerBaldosa(Integer.parseInt(s.nextToken()), Integer.parseInt(s.nextToken())).cambiarPasar();
+			}
+		}
+	}
+
+	public void generarBaldosas() {
+		crearBaldosas();
+		for (Point p : getObstaculos()) {
+			obtenerBaldosa(p.getX(), p.getY()).cambiarPasar();
 		}
 	}
 
@@ -208,7 +229,15 @@ public class Habitacion extends Componente {
 	}
 
 	public String toString() {
-		return id + "|" + x + "|" + y + "|" + largo + "|" + alto + "|" + lado + "|";
+		String string = id + "|" + x + "|" + y + "|" + largo + "|" + alto + "|" + lado + "|";
+		List<Point> obstaculos = getObstaculos();
+		if (obstaculos.isEmpty()) {
+			string += "!";
+		}
+		for (Point p : obstaculos) {
+			string += (int) p.getX() + "&" + (int) p.getY() + "&";
+		}
+		return string + "|";
 	}
 
 }

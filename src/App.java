@@ -1,5 +1,4 @@
 import java.awt.BorderLayout;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -8,7 +7,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ListIterator;
+import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -26,11 +25,8 @@ public class App extends JFrame implements ActionListener {
 		if (nombre != null) {
 			Piso piso = dibujo.getPiso();
 			int escalaBackup = dibujo.getEscala();
+			String unidadBackup = dibujo.getUnidad();
 			int orientacionBackup = dibujo.getOrientacion();
-			Recorrido origBackup = dibujo.getOrig();
-			Point trayPBackup = dibujo.getTrayP();
-			Habitacion trayHBackup = dibujo.getTrayH();
-			Habitacion actualBackup = dibujo.getActual();
 			try {
 				dibujo.eliminar();
 				BufferedReader br = new BufferedReader(new FileReader(nombre));
@@ -42,42 +38,23 @@ public class App extends JFrame implements ActionListener {
 				dibujo.setUnidad(st.nextToken());
 				dibujo.setOrientacion(Integer.parseInt(st.nextToken()));
 				while (st.hasMoreTokens()) {
-					Habitacion.setIdActual(Integer.parseInt(st.nextToken()));
-					Habitacion h = new Habitacion(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
-							Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
-							Integer.parseInt(st.nextToken()));
-					dibujo.getPiso().agregarHabitacion(h);
-					StringTokenizer to = new StringTokenizer(st.nextToken(), "&");
-					if (to.countTokens() > 1) {
-						while (to.hasMoreTokens()) {
-							h.obtenerBaldosa(Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()))
-									.cambiarPasar();
-						}
-					}
+					dibujo.getPiso().agregarHabitacion(new Habitacion(st));
 				}
 				if (s.hasMoreTokens()) {
 					st = new StringTokenizer(s.nextToken(), "%");
 					while (st.hasMoreTokens()) {
 						StringTokenizer to = new StringTokenizer(st.nextToken(), "Ç");
 						if (to.countTokens() > 1) {
-							Trayectoria t = new Trayectoria();
 							while (to.hasMoreTokens()) {
-								t.agregarBaldosa(dibujo.getPiso().buscarId(Integer.parseInt(to.nextToken())),
-										Integer.parseInt(to.nextToken()), Integer.parseInt(to.nextToken()));
+								dibujo.getPiso().getTrayectorias().add(new Trayectoria(to, dibujo));
 							}
-							dibujo.getPiso().getTrayectorias().add(t);
 						}
 					}
 				}
 				if (s.hasMoreTokens()) {
 					st = new StringTokenizer(s.nextToken(), "Ç");
 					while (st.hasMoreTokens()) {
-						dibujo.getPiso().agregarPuerta(Integer.parseInt(st.nextToken()),
-								Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()),
-								Integer.parseInt(st.nextToken()),
-								dibujo.getPiso().buscarId(Integer.parseInt(st.nextToken())),
-								dibujo.getPiso().buscarId(Integer.parseInt(st.nextToken())),
-								Boolean.valueOf(st.nextToken()));
+						dibujo.getPiso().agregarPuerta(st);
 					}
 				}
 			} catch (Exception e) {
@@ -87,54 +64,33 @@ public class App extends JFrame implements ActionListener {
 					dibujo.setOrientacion(orientacionBackup);
 				} catch (Exception ex) {
 				}
+				dibujo.setUnidad(unidadBackup);
 				dibujo.setPiso(piso);
-				dibujo.setTrayP(trayPBackup);
-				dibujo.setTrayH(trayHBackup);
-				dibujo.setOrig(origBackup);
-				dibujo.setActual(actualBackup);
 			}
 		}
 	}
 
 	private void guardar() {
 		if (nombre != null) {
-			ListIterator<Habitacion> i = dibujo.getPiso().getHabitaciones().listIterator();
 			String export = dibujo.getEscala() + "|" + dibujo.getUnidad() + "|" + dibujo.getOrientacion() + "|";
-			while (i.hasNext()) {
-				Habitacion h = i.next();
+			for (Habitacion h : dibujo.getPiso().getHabitaciones()) {
 				export += h.toString();
-				ListIterator<Point> it = h.getNoPasar().listIterator();
-				if (!it.hasNext()) {
-					export += "!";
-				}
-				while (it.hasNext()) {
-					Point p = it.next();
-					export += (int) p.getX() + "&" + (int) p.getY() + "&";
-				}
-				export += "|";
 			}
 			export += "$";
-			ListIterator<Trayectoria> it = dibujo.getPiso().getTrayectorias().listIterator();
-			if (!it.hasNext()) {
+			List<Trayectoria> trayectorias = dibujo.getPiso().getTrayectorias();
+			if (trayectorias.isEmpty()) {
 				export += "!";
-			} else {
-				while (it.hasNext()) {
-					Trayectoria t = it.next();
-					ListIterator<Recorrido> ite = t.getCamino().listIterator();
-					while (ite.hasNext()) {
-						export += ite.next().toString();
-					}
-					export += "%";
-				}
+			}
+			for (Trayectoria t : trayectorias) {
+				export += t.toString();
 			}
 			export += "$";
-			ListIterator<Puerta> ite = dibujo.getPiso().getPuertas().listIterator();
-			if (!ite.hasNext()) {
+			List<Puerta> puertas = dibujo.getPiso().getPuertas();
+			if (puertas.isEmpty()) {
 				export += "!";
-			} else {
-				while (ite.hasNext()) {
-					export += ite.next().toString();
-				}
+			}
+			for (Puerta p : puertas) {
+				export += p.toString();
 			}
 			try {
 				Files.write(Paths.get(nombre), export.substring(0, export.length() - 1).getBytes());
@@ -164,6 +120,7 @@ public class App extends JFrame implements ActionListener {
 	}
 
 	public void actionPerformed(ActionEvent e) {
+		String texto = null;
 		String opcion = ((JMenuItem) e.getSource()).getText();
 		if (opcion == "Nuevo") {
 			dibujo.eliminar();
@@ -191,7 +148,6 @@ public class App extends JFrame implements ActionListener {
 				}
 			}
 		} else if (opcion == "Escala") {
-			String texto = null;
 			try {
 				texto = JOptionPane.showInputDialog("Introduzca la nueva escala");
 				StringTokenizer st = new StringTokenizer(texto, " ");
@@ -207,7 +163,6 @@ public class App extends JFrame implements ActionListener {
 				}
 			}
 		} else if (opcion == "Orientación") {
-			String texto = null;
 			try {
 				texto = JOptionPane.showInputDialog("Introduzca la nueva orientación");
 				dibujo.setOrientacion(Integer.parseInt(texto));

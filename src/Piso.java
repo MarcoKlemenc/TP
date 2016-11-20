@@ -2,10 +2,10 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 public class Piso {
 
@@ -25,7 +25,6 @@ public class Piso {
 	public void agregarHabitacion(Habitacion h) {
 		habitaciones.add(h);
 		adyacencias.put(h, new HashSet<Habitacion>());
-		h.generarBaldosas();
 	}
 
 	public void eliminarHabitacion(Habitacion h) {
@@ -101,8 +100,7 @@ public class Piso {
 			cerca.addAll(adyacencias.get(h2));
 			cerca.retainAll(adyacencias.get(h1));
 			if (!cerca.isEmpty()) {
-				Iterator<Habitacion> azar = cerca.iterator();
-				Habitacion h3 = azar.next();
+				Habitacion h3 = (Habitacion) cerca.toArray()[0];
 				Baldosa inicioTemp = null;
 				Trayectoria t = null;
 				for (Puerta p : puertas) {
@@ -149,6 +147,12 @@ public class Piso {
 		puertas.add(new Puerta(x, y, largo, alto, h1, h2, vertical));
 		adyacencias.get(h1).add(h2);
 		adyacencias.get(h2).add(h1);
+	}
+
+	public void agregarPuerta(StringTokenizer s) {
+		agregarPuerta(Integer.parseInt(s.nextToken()), Integer.parseInt(s.nextToken()), Integer.parseInt(s.nextToken()),
+				Integer.parseInt(s.nextToken()), buscarId(Integer.parseInt(s.nextToken())),
+				buscarId(Integer.parseInt(s.nextToken())), Boolean.valueOf(s.nextToken()));
 	}
 
 	public void eliminarPuerta(Puerta p) {

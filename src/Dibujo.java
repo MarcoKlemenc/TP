@@ -173,17 +173,11 @@ class Dibujo extends JComponent {
 					Habitacion h1 = puertaActual.getH1();
 					Habitacion h2 = puertaActual.getH2();
 					if (puertaActual.isVertical()) {
-						int alto = e.getY() - puertaActual.getY();
-						alto = Math.max(2, alto);
-						alto = Math.min(alto,
-								Math.min(h1.getY() + h1.getAlto(), h2.getY() + h2.getAlto()) - puertaActual.getY());
-						puertaActual.setAlto(alto);
+						puertaActual.setAlto(Math.min(Math.max(2, e.getY() - puertaActual.getY()),
+								Math.min(h1.getY() + h1.getAlto(), h2.getY() + h2.getAlto()) - puertaActual.getY()));
 					} else {
-						int largo = e.getX() - puertaActual.getX();
-						largo = Math.max(2, largo);
-						largo = Math.min(largo,
-								Math.min(h1.getX() + h1.getLargo(), h2.getX() + h2.getLargo()) - puertaActual.getX());
-						puertaActual.setLargo(largo);
+						puertaActual.setLargo(Math.min(Math.max(2, e.getX() - puertaActual.getX()),
+								Math.min(h1.getX() + h1.getLargo(), h2.getX() + h2.getLargo()) - puertaActual.getX()));
 					}
 				}
 				if (actual == null) {
@@ -265,7 +259,8 @@ class Dibujo extends JComponent {
 					seleccionada.setLado(Math.max(2, Math.min(seleccionada.getLado() + e.getWheelRotation() * 4,
 							Math.min(seleccionada.getLargo(), seleccionada.getAlto()))));
 					seleccionada.generarBaldosas();
-				} else if (e.getX() <= borde || e.getY() <= borde) {
+				} else if (e.getX() <= borde || e.getY() <= borde || e.getX() >= getWidth() - borde
+						|| e.getY() >= getHeight() - borde) {
 					borde = Math.max(0,
 							Math.min(borde + e.getWheelRotation() * 2, Math.min(getWidth(), getHeight()) / 3));
 				} else {
@@ -434,12 +429,12 @@ class Dibujo extends JComponent {
 		this.piso = piso;
 	}
 
-	public Point getTrayP() {
+	public Point getPuntoOrig() {
 		return puntoOrig;
 	}
 
-	public void setTrayP(Point trayP) {
-		this.puntoOrig = trayP;
+	public void setPuntoOrig(Point puntoOrig) {
+		this.puntoOrig = puntoOrig;
 	}
 
 	public Habitacion getActual() {
@@ -450,12 +445,12 @@ class Dibujo extends JComponent {
 		this.actual = actual;
 	}
 
-	public Habitacion getTrayH() {
+	public Habitacion getHabitacionOrig() {
 		return habitacionOrig;
 	}
 
-	public void setTrayH(Habitacion trayH) {
-		this.habitacionOrig = trayH;
+	public void setHabitacionOrig(Habitacion habitacionOrig) {
+		this.habitacionOrig = habitacionOrig;
 	}
 
 	public Recorrido getOrig() {
