@@ -274,6 +274,7 @@ class Dibujo extends JComponent {
 
 	public void paint(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
+		int altura = g2.getFontMetrics().getHeight() / 2;
 		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		g2.setFont(new Font("Calibri", Font.PLAIN, (int) (borde / 1.2)));
 		g2.setPaint(Color.WHITE);
@@ -338,9 +339,14 @@ class Dibujo extends JComponent {
 			g2.setPaint(new Color(0, 192, 0, 128));
 			g2.fill(seleccionada.getInterior());
 			g2.setPaint(Color.BLACK);
-			g2.drawString("Largo: " + darMedida(seleccionada.getLargo()) + " - Alto: "
-					+ darMedida(seleccionada.getAlto()) + " - Baldosas: " + darMedida(seleccionada.getLado()), 20,
-					getHeight() - 5);
+			String medida = darMedida(seleccionada.getLargo());
+			int desvio = g2.getFontMetrics().stringWidth(medida) / 2;
+			escribir(g2, seleccionada.getX() + seleccionada.getLargo() / 2 - desvio, seleccionada.getY() + altura + 4,
+					0, medida);
+			medida = darMedida(seleccionada.getAlto());
+			escribir(g2, seleccionada.getX() + altura + 4, seleccionada.getY() + seleccionada.getAlto() / 2 + desvio,
+					270, medida);
+			escribir(g2, 20, getHeight() - (int) (borde / 6), 0, "Baldosas: " + darMedida(seleccionada.getLado()));
 		}
 		if (puntoOrig != null && piso.getHabitaciones().contains(habitacionOrig)) {
 			Baldosa b = habitacionOrig.obtenerBaldosa(puntoOrig.getX(), puntoOrig.getY());
@@ -369,20 +375,27 @@ class Dibujo extends JComponent {
 		g2.setPaint(Color.BLACK);
 		g2.drawLine(borde, borde - 1, borde + grilla - 1, borde - 1);
 		g2.drawString(String.valueOf(escala) + " " + unidad, borde, borde - 2);
-		int altura = g2.getFontMetrics().getHeight() / 2;
-		escribirOrientacion(g2, getWidth() / 2, (int) (borde / 1.5), 0);
-		escribirOrientacion(g2, getWidth() - altura - 4, getHeight() / 2, 90);
-		escribirOrientacion(g2, getWidth() / 2, getHeight() - (int) (borde / 6), 0);
-		escribirOrientacion(g2, altura + 4, getHeight() / 2 - 5, 270);
+		int o = orientacion;
+		int desvio = g2.getFontMetrics().stringWidth(String.valueOf(o)) / 2;
+		escribir(g2, getWidth() / 2 - desvio, (int) (borde / 1.5), 0, o);
+		desvio = g2.getFontMetrics().stringWidth(String.valueOf(o += (o >= 270) ? -270 : 90)) / 2;
+		escribir(g2, getWidth() - altura - 4, getHeight() / 2 - desvio, 90, o);
+		desvio = g2.getFontMetrics().stringWidth(String.valueOf(o += (o >= 270) ? -270 : 90)) / 2;
+		escribir(g2, getWidth() / 2 - desvio, getHeight() - (int) (borde / 6), 0, o);
+		desvio = g2.getFontMetrics().stringWidth(String.valueOf(o += (o >= 270) ? -270 : 90)) / 2;
+		escribir(g2, altura + 4, getHeight() / 2 + desvio, 270, o);
 	}
 
-	private void escribirOrientacion(Graphics2D g2, int x, int y, int angulo) {
+	private void escribir(Graphics2D g2, int x, int y, int angulo, int valor) {
+		escribir(g2, x, y, angulo, String.valueOf(valor));
+	}
+
+	private void escribir(Graphics2D g2, int x, int y, int angulo, String valor) {
 		g2.translate(x, y);
 		g2.rotate(Math.toRadians(angulo));
-		g2.drawString(String.valueOf(orientacion), 0, 0);
+		g2.drawString(valor, 0, 0);
 		g2.rotate(-Math.toRadians(angulo));
 		g2.translate(-x, -y);
-		orientacion += (orientacion >= 270) ? -270 : 90;
 	}
 
 	public void eliminar() {
