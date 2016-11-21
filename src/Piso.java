@@ -45,7 +45,6 @@ public class Piso {
 			trayectorias.add(t);
 		} else if (adyacencias.containsKey(h1)) {
 			Set<Habitacion> cerca = new HashSet<Habitacion>();
-			cerca.add(h2);
 			cerca.addAll(adyacencias.get(h2));
 			cerca.retainAll(adyacencias.get(h1));
 			if (!cerca.isEmpty()) {
@@ -74,14 +73,15 @@ public class Piso {
 					}
 				}
 				encontradoP = false;
+				encontradoB = false;
 				for (Puerta p : puertas) {
 					if ((p.getH1() == h2 && p.getH2() == h3 || p.getH1() == h3 && p.getH2() == h2) && !encontradoP) {
+						encontradoP = true;
 						for (Baldosa b : h3.getBaldosas()) {
 							if (b.contiene(p) && !encontradoB) {
 								encontradoB = true;
 								t.anexar(h3.generarTrayectoria(inicioTemp.getFila(), inicioTemp.getColumna(),
 										b.getFila(), b.getColumna()));
-								break;
 							}
 						}
 						encontradoB = false;
@@ -90,7 +90,6 @@ public class Piso {
 								encontradoB = true;
 								t.anexar(h2.generarTrayectoria(b.getFila(), b.getColumna(), dest.getFila(),
 										dest.getColumna()));
-								break;
 							}
 						}
 					}

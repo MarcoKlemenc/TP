@@ -9,7 +9,7 @@ public class Recorrido {
 		this.habitacion = habitacion;
 		this.coordenadas = coordenadas;
 	}
-	
+
 	public boolean equals(Recorrido c) {
 		return habitacion == c.habitacion && coordenadas.equals(c.getCoordenadas());
 	}

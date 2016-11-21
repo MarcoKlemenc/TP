@@ -33,7 +33,7 @@ public class Archivo {
 		} catch (Exception e) {
 		}
 	}
-	
+
 	private static void inicializar(String extension) {
 		String formato = extension.substring(1);
 		fc.setFileFilter(new FileNameExtensionFilter(formato.toUpperCase(), formato));

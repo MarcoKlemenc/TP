@@ -25,7 +25,7 @@ public class Habitacion extends Componente {
 		id = idActual++;
 		generarBaldosas();
 	}
-	
+
 	public Trayectoria generarTrayectoria(int filaA, int columnaA, int filaB, int columnaB) {
 		int filaInicial = filaA;
 		int columnaInicial = columnaA;
@@ -101,8 +101,9 @@ public class Habitacion extends Componente {
 	}
 
 	public void generarBaldosas() {
+		List<Point> obstaculos = getObstaculos();
 		crearBaldosas();
-		for (Point p : getObstaculos()) {
+		for (Point p : obstaculos) {
 			getBaldosa(p.getX(), p.getY()).cambiarPasar();
 		}
 	}
