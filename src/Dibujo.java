@@ -184,7 +184,8 @@ class Dibujo extends JComponent {
 						actual.setAlto(y);
 						if (l.size() > 0) {
 							for (Habitacion h : l) {
-								if (actual.intersecta(h.getBordeIzq()) && (!actual.intersecta(h.getBordeArr()) || aux(h))) {
+								if (actual.intersecta(h.getBordeIzq())
+										&& (!actual.intersecta(h.getBordeArr()) || aux(h))) {
 									actual.setLargo(h.getX() - actual.getX());
 								} else if (actual.intersecta(h.getBordeArr())
 										&& (!(actual.intersecta(h.getBordeIzq()) && aux(h)))) {
@@ -266,8 +267,8 @@ class Dibujo extends JComponent {
 				g2.draw(new Rectangle2D.Float(i, j, grilla, grilla));
 			}
 		}
-		Color[] colores = { Color.BLUE, Color.CYAN, Color.GREEN, Color.YELLOW, Color.ORANGE, Color.RED, Color.PINK,
-				Color.MAGENTA };
+		Color[] colores = { new Color(192, 255, 255), new Color(192, 255, 192), new Color(255, 255, 192),
+				new Color(255, 192, 192), new Color(255, 192, 255), new Color(192, 192, 255) };
 		int color = -1;
 		int colorFrente = -1;
 		for (Habitacion h : piso.getHabitaciones()) {
@@ -284,7 +285,7 @@ class Dibujo extends JComponent {
 		}
 		List<Trayectoria> tt = new ArrayList<Trayectoria>();
 		for (Trayectoria t : piso.getTrayectorias()) {
-			g2.setPaint(colores[color += (color == 7) ? -7 : 1]);
+			g2.setPaint(colores[color += (color == 5) ? -5 : 1]);
 			if (frente != t) {
 				for (Recorrido r : t.getCamino()) {
 					Point p = r.getCoordenadas();

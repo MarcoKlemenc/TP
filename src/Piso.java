@@ -14,6 +14,92 @@ public class Piso {
 	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
 	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
 
+	public void generarTrayectoria(Recorrido orig, Recorrido dest) {
+		Habitacion h1 = orig.getHabitacion();
+		Habitacion h2 = dest.getHabitacion();
+		if (h1 == h2) {
+			trayectorias
+					.add(h1.generarTrayectoria(orig.getFila(), orig.getColumna(), dest.getFila(), dest.getColumna()));
+		} else if (h1 != h2 && adyacencias.containsKey(h1) && adyacencias.get(h1).contains(h2)) {
+			Trayectoria t = null;
+			boolean encontradoP = false;
+			boolean encontradoB = false;
+			for (Puerta p : puertas) {
+				if ((p.getH1() == h1 && p.getH2() == h2 || p.getH1() == h2 && p.getH2() == h1) && !encontradoP) {
+					for (Baldosa b : h1.getBaldosas()) {
+						if (b.contiene(p) && !encontradoB) {
+							encontradoB = true;
+							t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), b.getFila(), b.getColumna());
+						}
+					}
+					encontradoB = false;
+					for (Baldosa b : h2.getBaldosas()) {
+						if (b.contiene(p) && !encontradoB) {
+							encontradoB = true;
+							t.anexar(h2.generarTrayectoria(b.getFila(), b.getColumna(), dest.getFila(),
+									dest.getColumna()));
+						}
+					}
+				}
+			}
+			trayectorias.add(t);
+		} else if (adyacencias.containsKey(h1)) {
+			Set<Habitacion> cerca = new HashSet<Habitacion>();
+			cerca.add(h2);
+			cerca.addAll(adyacencias.get(h2));
+			cerca.retainAll(adyacencias.get(h1));
+			if (!cerca.isEmpty()) {
+				Habitacion h3 = (Habitacion) cerca.toArray()[0];
+				Baldosa inicioTemp = null;
+				Trayectoria t = null;
+				boolean encontradoP = false;
+				boolean encontradoB = false;
+				for (Puerta p : puertas) {
+					if ((p.getH1() == h1 && p.getH2() == h3 || p.getH1() == h3 && p.getH2() == h1) && !encontradoP) {
+						encontradoP = true;
+						for (Baldosa b : h1.getBaldosas()) {
+							if (b.contiene(p) && !encontradoB) {
+								encontradoB = true;
+								t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), b.getFila(),
+										b.getColumna());
+							}
+						}
+						encontradoB = false;
+						for (Baldosa b : h3.getBaldosas()) {
+							if (b.contiene(p) && !encontradoB) {
+								encontradoB = true;
+								inicioTemp = b;
+							}
+						}
+					}
+				}
+				encontradoP = false;
+				for (Puerta p : puertas) {
+					if ((p.getH1() == h2 && p.getH2() == h3 || p.getH1() == h3 && p.getH2() == h2) && !encontradoP) {
+						for (Baldosa b : h3.getBaldosas()) {
+							if (b.contiene(p) && !encontradoB) {
+								encontradoB = true;
+								t.anexar(h3.generarTrayectoria(inicioTemp.getFila(), inicioTemp.getColumna(),
+										b.getFila(), b.getColumna()));
+								break;
+							}
+						}
+						encontradoB = false;
+						for (Baldosa b : h2.getBaldosas()) {
+							if (b.contiene(p) && !encontradoB) {
+								encontradoB = true;
+								t.anexar(h2.generarTrayectoria(b.getFila(), b.getColumna(), dest.getFila(),
+										dest.getColumna()));
+								break;
+							}
+						}
+					}
+				}
+				trayectorias.add(t);
+			}
+		}
+	}
+
 	public void agregarHabitacion(Habitacion h) {
 		habitaciones.add(h);
 		adyacencias.put(h, new HashSet<Habitacion>());
@@ -30,7 +116,7 @@ public class Piso {
 		adyacencias.get(h1).add(h2);
 		adyacencias.get(h2).add(h1);
 	}
-	
+
 	public Habitacion baldosaDentro(Baldosa b) {
 		for (Habitacion h : habitaciones) {
 			if (h.contieneBaldosa(b)) {
@@ -47,7 +133,7 @@ public class Piso {
 	public boolean contienePuertaH(Habitacion h1, Habitacion h2, MouseEvent e) {
 		return h1 != h2 && h1.contiene(e.getX(), e.getY() - 5) && h2.contiene(e.getX(), e.getY() + 5);
 	}
-	
+
 	public List<Habitacion> cruza(Habitacion o) {
 		List<Habitacion> l = new ArrayList<Habitacion>();
 		for (Habitacion h : habitaciones) {
@@ -100,79 +186,6 @@ public class Piso {
 			return true;
 		}
 		return false;
-	}
-
-	public void generarTrayectoria(Recorrido orig, Recorrido dest) {
-		Habitacion h1 = orig.getHabitacion();
-		Habitacion h2 = dest.getHabitacion();
-		if (h1 == h2) {
-			trayectorias
-					.add(h1.generarTrayectoria(orig.getFila(), orig.getColumna(), dest.getFila(), dest.getColumna()));
-		} else if (h1 != h2 && adyacencias.containsKey(h1) && adyacencias.get(h1).contains(h2)) {
-			Trayectoria t = null;
-			for (Puerta p : puertas) {
-				if (p.getH1() == h1 && p.getH2() == h2 || p.getH1() == h2 && p.getH2() == h1) {
-					for (Baldosa b : h1.getBaldosas()) {
-						if (b.contiene(p)) {
-							t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), b.getFila(), b.getColumna());
-						}
-					}
-					for (Baldosa b : h2.getBaldosas()) {
-						if (b.contiene(p)) {
-							t.anexar(h2.generarTrayectoria(b.getFila(), b.getColumna(), dest.getFila(),
-									dest.getColumna()));
-						}
-					}
-				}
-			}
-			trayectorias.add(t);
-		} else if (adyacencias.containsKey(h1)) {
-			Set<Habitacion> cerca = new HashSet<Habitacion>();
-			cerca.add(h2);
-			cerca.addAll(adyacencias.get(h2));
-			cerca.retainAll(adyacencias.get(h1));
-			if (!cerca.isEmpty()) {
-				Habitacion h3 = (Habitacion) cerca.toArray()[0];
-				Baldosa inicioTemp = null;
-				Trayectoria t = null;
-				for (Puerta p : puertas) {
-					if (p.getH1() == h1 && p.getH2() == h3 || p.getH1() == h3 && p.getH2() == h1) {
-						for (Baldosa b : h1.getBaldosas()) {
-							if (b.contiene(p)) {
-								t = h1.generarTrayectoria(orig.getFila(), orig.getColumna(), b.getFila(),
-										b.getColumna());
-								break;
-							}
-						}
-						for (Baldosa b : h3.getBaldosas()) {
-							if (b.contiene(p)) {
-								inicioTemp = b;
-								break;
-							}
-						}
-					}
-				}
-				for (Puerta p : puertas) {
-					if (p.getH1() == h2 && p.getH2() == h3 || p.getH1() == h3 && p.getH2() == h2) {
-						for (Baldosa b : h3.getBaldosas()) {
-							if (b.contiene(p)) {
-								t.anexar(h3.generarTrayectoria(inicioTemp.getFila(), inicioTemp.getColumna(),
-										b.getFila(), b.getColumna()));
-								break;
-							}
-						}
-						for (Baldosa b : h2.getBaldosas()) {
-							if (b.contiene(p)) {
-								t.anexar(h2.generarTrayectoria(b.getFila(), b.getColumna(), dest.getFila(),
-										dest.getColumna()));
-								break;
-							}
-						}
-					}
-				}
-				trayectorias.add(t);
-			}
-		}
 	}
 
 	public Habitacion getHabitacion(int id) {
