@@ -9,6 +9,14 @@ public class Recorrido {
 		this.habitacion = habitacion;
 		this.coordenadas = coordenadas;
 	}
+	
+	public boolean equals(Recorrido c) {
+		return habitacion == c.habitacion && coordenadas.equals(c.getCoordenadas());
+	}
+
+	public String toString() {
+		return habitacion.getId() + "Ç" + (int) coordenadas.getX() + "Ç" + (int) coordenadas.getY() + "Ç";
+	}
 
 	public Habitacion getHabitacion() {
 		return habitacion;
@@ -25,13 +33,4 @@ public class Recorrido {
 	public int getColumna() {
 		return (int) coordenadas.getY();
 	}
-
-	public boolean equals(Recorrido c) {
-		return habitacion == c.habitacion && coordenadas.equals(c.getCoordenadas());
-	}
-
-	public String toString() {
-		return habitacion.getId() + "Ç" + (int) coordenadas.getX() + "Ç" + (int) coordenadas.getY() + "Ç";
-	}
-
 }

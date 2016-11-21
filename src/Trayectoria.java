@@ -15,21 +15,19 @@ public class Trayectoria {
 
 	public Trayectoria(StringTokenizer s, Dibujo d) {
 		while (s.hasMoreTokens()) {
-			agregarBaldosa(d.getPiso().buscarId(Integer.parseInt(s.nextToken())), Integer.parseInt(s.nextToken()),
+			agregarBaldosa(d.getPiso().getHabitacion(Integer.parseInt(s.nextToken())), Integer.parseInt(s.nextToken()),
 					Integer.parseInt(s.nextToken()));
 		}
-	}
-
-	public void anexar(Trayectoria t) {
-		for (Recorrido c : t.getCamino()) {
-			camino.add(c);
-		}
-		habitaciones.addAll(t.getHabitaciones());
 	}
 
 	public void agregarBaldosa(Habitacion h, int f, int c) {
 		camino.add(new Recorrido(h, new Point(f, c)));
 		habitaciones.add(h);
+	}
+
+	public void anexar(Trayectoria t) {
+		camino.addAll(t.getCamino());
+		habitaciones.addAll(t.getHabitaciones());
 	}
 
 	public boolean buscar(Habitacion h, Point p) {
@@ -41,14 +39,6 @@ public class Trayectoria {
 		return false;
 	}
 
-	public List<Recorrido> getCamino() {
-		return camino;
-	}
-
-	public Set<Habitacion> getHabitaciones() {
-		return habitaciones;
-	}
-
 	public String toString() {
 		String string = "";
 		for (Recorrido r : camino) {
@@ -57,4 +47,11 @@ public class Trayectoria {
 		return string + "%";
 	}
 
+	public List<Recorrido> getCamino() {
+		return camino;
+	}
+
+	public Set<Habitacion> getHabitaciones() {
+		return habitaciones;
+	}
 }

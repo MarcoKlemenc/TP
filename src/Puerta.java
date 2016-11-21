@@ -22,6 +22,10 @@ public class Puerta extends Componente {
 		}
 	}
 
+	public String toString() {
+		return x + "Ç" + y + "Ç" + largo + "Ç" + alto + "Ç" + h1.getId() + "Ç" + h2.getId() + "Ç" + vertical + "Ç";
+	}
+
 	public Habitacion getH1() {
 		return h1;
 	}
@@ -33,9 +37,4 @@ public class Puerta extends Componente {
 	public boolean isVertical() {
 		return vertical;
 	}
-
-	public String toString() {
-		return x + "Ç" + y + "Ç" + largo + "Ç" + alto + "Ç" + h1.getId() + "Ç" + h2.getId() + "Ç" + vertical + "Ç";
-	}
-
 }

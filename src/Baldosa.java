@@ -13,7 +13,8 @@ public class Baldosa extends Componente {
 
 	public boolean contiene(Puerta p) {
 		return contiene(p.getX(), p.getY()) || contiene(p.getX() + p.getLargo(), p.getY())
-				|| contiene(p.getX(), p.getY() + p.getAlto());
+				|| contiene(p.getX(), p.getY() + p.getAlto())
+				|| contiene(p.getX() + p.getLargo(), p.getY() + p.getAlto());
 	}
 
 	public Point getCoordenadas() {
@@ -35,5 +36,4 @@ public class Baldosa extends Componente {
 	public int getColumna() {
 		return columna;
 	}
-
 }

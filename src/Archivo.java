@@ -9,24 +9,6 @@ public class Archivo {
 
 	static JFileChooser fc = new JFileChooser();
 
-	private static void inicializar(String extension) {
-		String formato = extension.substring(1);
-		fc.setFileFilter(new FileNameExtensionFilter(formato.toUpperCase(), formato));
-		try {
-			Scanner s = new Scanner(new File("dir.ini"));
-			fc.setCurrentDirectory(new File(s.nextLine()));
-			s.close();
-		} catch (Exception e) {
-		}
-	}
-
-	private static void guardarDir() {
-		try {
-			Files.write(Paths.get("dir.ini"), fc.getCurrentDirectory().toString().getBytes());
-		} catch (Exception e) {
-		}
-	}
-
 	public static String abrir(String extension) {
 		inicializar(extension);
 		int a = fc.showOpenDialog(fc);
@@ -45,4 +27,21 @@ public class Archivo {
 		return null;
 	}
 
+	private static void guardarDir() {
+		try {
+			Files.write(Paths.get("dir.ini"), fc.getCurrentDirectory().toString().getBytes());
+		} catch (Exception e) {
+		}
+	}
+	
+	private static void inicializar(String extension) {
+		String formato = extension.substring(1);
+		fc.setFileFilter(new FileNameExtensionFilter(formato.toUpperCase(), formato));
+		try {
+			Scanner s = new Scanner(new File("dir.ini"));
+			fc.setCurrentDirectory(new File(s.nextLine()));
+			s.close();
+		} catch (Exception e) {
+		}
+	}
 }

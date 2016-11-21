@@ -25,25 +25,61 @@ public class Habitacion extends Componente {
 		id = idActual++;
 		generarBaldosas();
 	}
-
-	private boolean pasarPor(int filaA, int columnaA) {
-		return obtenerBaldosa(filaA, columnaA) != null && obtenerBaldosa(filaA, columnaA).isPasar();
-	}
-
-	private int getFilas() {
-		int filas = 0;
-		for (Baldosa b : baldosas) {
-			filas = Math.max(b.getFila(), filas);
+	
+	public Trayectoria generarTrayectoria(int filaA, int columnaA, int filaB, int columnaB) {
+		int filaInicial = filaA;
+		int columnaInicial = columnaA;
+		try {
+			int filaAnterior = -1;
+			int columnaAnterior = -1;
+			int filas = getFilas();
+			int columnas = getColumnas();
+			Trayectoria t = new Trayectoria();
+			while (filaA != filaB || columnaA != columnaB) {
+				Baldosa b = getBaldosa(filaA, columnaA);
+				if (b.isPasar()) {
+					filaAnterior = filaA;
+					columnaAnterior = columnaA;
+					t.agregarBaldosa(this, filaA, columnaA);
+					if (Math.abs(filaA - filaB) > Math.abs(columnaA - columnaB)) {
+						filaA -= Math.signum(filaA - filaB);
+					} else if (Math.abs(filaA - filaB) < Math.abs(columnaA - columnaB)) {
+						columnaA -= Math.signum(columnaA - columnaB);
+					} else {
+						filaA -= Math.signum(filaA - filaB);
+						columnaA -= Math.signum(columnaA - columnaB);
+					}
+				} else {
+					if (pasarPor(filaA, columnaA - 1) && columnaAnterior == columnaA - 1) {
+						while (pasarPor(filaA, columnaA - 1) && !getBaldosa(filaA, columnaA).isPasar()) {
+							t.agregarBaldosa(this, filaA, columnaA - 1);
+							filaA += (filaAnterior > 1) ? -1 : 1;
+						}
+					} else if (pasarPor(filaA - 1, columnaA) && filaAnterior == filaA - 1) {
+						while (pasarPor(filaA - 1, columnaA) && !getBaldosa(filaA, columnaA).isPasar()) {
+							t.agregarBaldosa(this, filaA - 1, columnaA);
+							columnaA += (columnaAnterior < columnas) ? 1 : -1;
+						}
+					} else if (pasarPor(filaA, columnaA + 1) && columnaAnterior == columnaA + 1) {
+						while (pasarPor(filaA, columnaA + 1) && !getBaldosa(filaA, columnaA).isPasar()) {
+							t.agregarBaldosa(this, filaA, columnaA + 1);
+							filaA += (filaAnterior < filas) ? 1 : -1;
+						}
+					} else if (pasarPor(filaA + 1, columnaA) && filaAnterior == filaA + 1) {
+						while (pasarPor(filaA + 1, columnaA) && !getBaldosa(filaA, columnaA).isPasar()) {
+							t.agregarBaldosa(this, filaA + 1, columnaA);
+							columnaA += (columnaAnterior > 1) ? -1 : 1;
+						}
+					}
+				}
+			}
+			if (pasarPor(filaA, columnaA)) {
+				t.agregarBaldosa(this, filaA, columnaA);
+			}
+			return t;
+		} catch (Exception e) {
+			return generarTrayectoria(filaB, columnaB, filaInicial, columnaInicial);
 		}
-		return filas;
-	}
-
-	private int getColumnas() {
-		int columnas = 0;
-		for (Baldosa b : baldosas) {
-			columnas = Math.max(b.getColumna(), columnas);
-		}
-		return columnas;
 	}
 
 	public boolean contieneBaldosa(Baldosa b) {
@@ -64,16 +100,20 @@ public class Habitacion extends Componente {
 		return null;
 	}
 
-	private List<Point> getObstaculos() {
-		List<Point> obstaculos = new ArrayList<Point>();
-		if (baldosas != null) {
-			for (Baldosa b : baldosas) {
-				if (!b.isPasar()) {
-					obstaculos.add(b.getCoordenadas());
-				}
+	public void generarBaldosas() {
+		crearBaldosas();
+		for (Point p : getObstaculos()) {
+			getBaldosa(p.getX(), p.getY()).cambiarPasar();
+		}
+	}
+
+	public void generarBaldosas(StringTokenizer s) {
+		crearBaldosas();
+		if (s.countTokens() > 1) {
+			while (s.hasMoreTokens()) {
+				getBaldosa(Integer.parseInt(s.nextToken()), Integer.parseInt(s.nextToken())).cambiarPasar();
 			}
 		}
-		return obstaculos;
 	}
 
 	public boolean intersecta(Habitacion h) {
@@ -92,24 +132,16 @@ public class Habitacion extends Componente {
 		return !a.isEmpty();
 	}
 
-	public Rectangle2D getColision() {
-		return new Rectangle2D.Float(x, y, largo + 1, alto + 1);
-	}
-
-	public Rectangle2D bordeIzq() {
-		return new Rectangle2D.Float(x, y, 1, alto);
-	}
-
-	public Rectangle2D bordeDer() {
-		return new Rectangle2D.Float(x + largo, y, 1, alto);
-	}
-
-	public Rectangle2D bordeArr() {
-		return new Rectangle2D.Float(x, y, largo, 1);
-	}
-
-	public Rectangle2D bordeAba() {
-		return new Rectangle2D.Float(x, y + alto, largo, 1);
+	public String toString() {
+		String string = id + "|" + x + "|" + y + "|" + largo + "|" + alto + "|" + lado + "|";
+		List<Point> obstaculos = getObstaculos();
+		if (obstaculos.isEmpty()) {
+			string += "!";
+		}
+		for (Point p : obstaculos) {
+			string += (int) p.getX() + "&" + (int) p.getY() + "&";
+		}
+		return string + "|";
 	}
 
 	private void crearBaldosas() {
@@ -127,23 +159,39 @@ public class Habitacion extends Componente {
 		}
 	}
 
-	public void generarBaldosas(StringTokenizer s) {
-		crearBaldosas();
-		if (s.countTokens() > 1) {
-			while (s.hasMoreTokens()) {
-				obtenerBaldosa(Integer.parseInt(s.nextToken()), Integer.parseInt(s.nextToken())).cambiarPasar();
+	private boolean pasarPor(int filaA, int columnaA) {
+		return getBaldosa(filaA, columnaA) != null && getBaldosa(filaA, columnaA).isPasar();
+	}
+
+	private int getFilas() {
+		int filas = 0;
+		for (Baldosa b : baldosas) {
+			filas = Math.max(b.getFila(), filas);
+		}
+		return filas;
+	}
+
+	private int getColumnas() {
+		int columnas = 0;
+		for (Baldosa b : baldosas) {
+			columnas = Math.max(b.getColumna(), columnas);
+		}
+		return columnas;
+	}
+
+	private List<Point> getObstaculos() {
+		List<Point> obstaculos = new ArrayList<Point>();
+		if (baldosas != null) {
+			for (Baldosa b : baldosas) {
+				if (!b.isPasar()) {
+					obstaculos.add(b.getCoordenadas());
+				}
 			}
 		}
+		return obstaculos;
 	}
 
-	public void generarBaldosas() {
-		crearBaldosas();
-		for (Point p : getObstaculos()) {
-			obtenerBaldosa(p.getX(), p.getY()).cambiarPasar();
-		}
-	}
-
-	public Baldosa obtenerBaldosa(double fila, double columna) {
+	public Baldosa getBaldosa(double fila, double columna) {
 		for (Baldosa b : this.baldosas) {
 			if (b.getFila() == fila && b.getColumna() == columna) {
 				return b;
@@ -152,60 +200,24 @@ public class Habitacion extends Componente {
 		return null;
 	}
 
-	public Trayectoria generarTrayectoria(int filaA, int columnaA, int filaB, int columnaB) {
-		int filaInicial = filaA;
-		int columnaInicial = columnaA;
-		try {
-			int filaAnterior = -1;
-			int columnaAnterior = -1;
-			int filas = getFilas();
-			int columnas = getColumnas();
-			Trayectoria t = new Trayectoria();
-			while (filaA != filaB || columnaA != columnaB) {
-				Baldosa b = obtenerBaldosa(filaA, columnaA);
-				if (b.isPasar()) {
-					filaAnterior = filaA;
-					columnaAnterior = columnaA;
-					t.agregarBaldosa(this, filaA, columnaA);
-					if (Math.abs(filaA - filaB) > Math.abs(columnaA - columnaB)) {
-						filaA -= Math.signum(filaA - filaB);
-					} else if (Math.abs(filaA - filaB) < Math.abs(columnaA - columnaB)) {
-						columnaA -= Math.signum(columnaA - columnaB);
-					} else {
-						filaA -= Math.signum(filaA - filaB);
-						columnaA -= Math.signum(columnaA - columnaB);
-					}
-				} else {
-					if (pasarPor(filaA, columnaA - 1) && columnaAnterior == columnaA - 1) {
-						while (pasarPor(filaA, columnaA - 1) && !obtenerBaldosa(filaA, columnaA).isPasar()) {
-							t.agregarBaldosa(this, filaA, columnaA - 1);
-							filaA += (filaAnterior > 1) ? -1 : 1;
-						}
-					} else if (pasarPor(filaA - 1, columnaA) && filaAnterior == filaA - 1) {
-						while (pasarPor(filaA - 1, columnaA) && !obtenerBaldosa(filaA, columnaA).isPasar()) {
-							t.agregarBaldosa(this, filaA - 1, columnaA);
-							columnaA += (columnaAnterior < columnas) ? 1 : -1;
-						}
-					} else if (pasarPor(filaA, columnaA + 1) && columnaAnterior == columnaA + 1) {
-						while (pasarPor(filaA, columnaA + 1) && !obtenerBaldosa(filaA, columnaA).isPasar()) {
-							t.agregarBaldosa(this, filaA, columnaA + 1);
-							filaA += (filaAnterior < filas) ? 1 : -1;
-						}
-					} else if (pasarPor(filaA + 1, columnaA) && filaAnterior == filaA + 1) {
-						while (pasarPor(filaA + 1, columnaA) && !obtenerBaldosa(filaA, columnaA).isPasar()) {
-							t.agregarBaldosa(this, filaA + 1, columnaA);
-							columnaA += (columnaAnterior > 1) ? -1 : 1;
-						}
-					}
-				}
-			}
-			if (pasarPor(filaA, columnaA)) {
-				t.agregarBaldosa(this, filaA, columnaA);
-			}
-			return t;
-		} catch (Exception e) {
-			return generarTrayectoria(filaB, columnaB, filaInicial, columnaInicial);
-		}
+	public Rectangle2D getColision() {
+		return new Rectangle2D.Float(x, y, largo + 1, alto + 1);
+	}
+
+	public Rectangle2D getBordeIzq() {
+		return new Rectangle2D.Float(x, y, 1, alto);
+	}
+
+	public Rectangle2D getBordeDer() {
+		return new Rectangle2D.Float(x + largo, y, 1, alto);
+	}
+
+	public Rectangle2D getBordeArr() {
+		return new Rectangle2D.Float(x, y, largo, 1);
+	}
+
+	public Rectangle2D getBordeAba() {
+		return new Rectangle2D.Float(x, y + alto, largo, 1);
 	}
 
 	public List<Baldosa> getBaldosas() {
@@ -227,17 +239,4 @@ public class Habitacion extends Componente {
 	public static void setIdActual(int idActual) {
 		Habitacion.idActual = idActual;
 	}
-
-	public String toString() {
-		String string = id + "|" + x + "|" + y + "|" + largo + "|" + alto + "|" + lado + "|";
-		List<Point> obstaculos = getObstaculos();
-		if (obstaculos.isEmpty()) {
-			string += "!";
-		}
-		for (Point p : obstaculos) {
-			string += (int) p.getX() + "&" + (int) p.getY() + "&";
-		}
-		return string + "|";
-	}
-
 }

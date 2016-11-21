@@ -27,31 +27,12 @@ class Dibujo extends JComponent {
 	private String[] modos = { "habitación", "trayectoria", "obstáculo" };
 	private Trayectoria frente;
 
-	public String cambiarModo() {
-		seleccionada = null;
-		frente = null;
-		return modos[modo += (modo == 2) ? -2 : 1];
-	}
-
-	private String darMedida(int valor) {
-		String medida = Integer.toString(valor * escala);
-		medida = new StringBuilder(medida).insert(medida.length() - 2, ".").toString();
-		if (medida.charAt(0) == '.') {
-			medida = new StringBuilder(medida).insert(0, "0").toString();
-		}
-		return medida + " " + unidad;
-	}
-
-	private boolean aux(Habitacion h) {
-		return actual.getX() + actual.getLargo() - h.getX() < actual.getY() + actual.getAlto() - h.getY();
-	}
-
 	public Dibujo() {
 
 		this.addMouseListener(new MouseAdapter() {
 
 			public void mouseClicked(MouseEvent e) {
-				List<Habitacion> l = piso.contiene(e);
+				List<Habitacion> l = piso.getHabitaciones(e);
 				if (seleccionada != null && l.size() == 1 && l.get(0) == seleccionada) {
 					piso.eliminarHabitacion(l.get(0));
 					seleccionada = null;
@@ -62,7 +43,7 @@ class Dibujo extends JComponent {
 					seleccionada = null;
 					frente = null;
 				}
-				Puerta p = piso.contieneP(e);
+				Puerta p = piso.getPuerta(e);
 				if (p != null) {
 					piso.eliminarPuerta(p);
 				} else if (l.size() >= 1) {
@@ -101,7 +82,7 @@ class Dibujo extends JComponent {
 							puntoOrig = null;
 							habitacionOrig = null;
 						} else if (b.isPasar()) {
-							Trayectoria seleccion = piso.buscarTrayectoria(e, b);
+							Trayectoria seleccion = piso.getTrayectoria(e, b);
 							if (seleccion == null) {
 								orig = new Recorrido(piso.baldosaDentro(b), b.getCoordenadas());
 								puntoOrig = new Point(b.getFila(), b.getColumna());
@@ -135,12 +116,12 @@ class Dibujo extends JComponent {
 			}
 
 			public void mousePressed(MouseEvent e) {
-				List<Habitacion> l = piso.contiene(e);
+				List<Habitacion> l = piso.getHabitaciones(e);
 				if (!(l.size() == 1 && l.get(0) == seleccionada)) {
 					seleccionada = null;
 					actual = null;
 				}
-				puertaActual = piso.contieneP(e);
+				puertaActual = piso.getPuerta(e);
 				if (puertaActual == null) {
 					if (l.size() == 1) {
 						actual = l.get(0);
@@ -203,10 +184,10 @@ class Dibujo extends JComponent {
 						actual.setAlto(y);
 						if (l.size() > 0) {
 							for (Habitacion h : l) {
-								if (actual.intersecta(h.bordeIzq()) && (!actual.intersecta(h.bordeArr()) || aux(h))) {
+								if (actual.intersecta(h.getBordeIzq()) && (!actual.intersecta(h.getBordeArr()) || aux(h))) {
 									actual.setLargo(h.getX() - actual.getX());
-								} else if (actual.intersecta(h.bordeArr())
-										&& (!(actual.intersecta(h.bordeIzq()) && aux(h)))) {
+								} else if (actual.intersecta(h.getBordeArr())
+										&& (!(actual.intersecta(h.getBordeIzq()) && aux(h)))) {
 									actual.setAlto(h.getY() - actual.getY());
 								}
 							}
@@ -222,10 +203,10 @@ class Dibujo extends JComponent {
 							boolean chocoY = false;
 							for (Habitacion h : l) {
 								if (!chocoX) {
-									if (actual.intersecta(h.bordeDer())) {
+									if (actual.intersecta(h.getBordeDer())) {
 										actual.setX(Math.max(h.getX() + h.getLargo(), x));
 										chocoX = true;
-									} else if (actual.intersecta(h.bordeIzq())) {
+									} else if (actual.intersecta(h.getBordeIzq())) {
 										actual.setX(Math.min(h.getX() - actual.getLargo(), x));
 										chocoX = true;
 									} else {
@@ -233,10 +214,10 @@ class Dibujo extends JComponent {
 									}
 								}
 								if (!chocoY) {
-									if (actual.intersecta(h.bordeAba())) {
+									if (actual.intersecta(h.getBordeAba())) {
 										actual.setY(Math.max(h.getY() + h.getAlto(), y));
 										chocoY = true;
-									} else if (actual.intersecta(h.bordeArr())) {
+									} else if (actual.intersecta(h.getBordeArr())) {
 										actual.setY(Math.min(h.getY() - actual.getAlto(), y));
 										chocoY = true;
 									} else {
@@ -307,7 +288,7 @@ class Dibujo extends JComponent {
 			if (frente != t) {
 				for (Recorrido r : t.getCamino()) {
 					Point p = r.getCoordenadas();
-					Baldosa b = r.getHabitacion().obtenerBaldosa(p.getX(), p.getY());
+					Baldosa b = r.getHabitacion().getBaldosa(p.getX(), p.getY());
 					if (b != null) {
 						g2.fill(b.getInterior());
 					} else {
@@ -321,7 +302,7 @@ class Dibujo extends JComponent {
 		if (frente != null) {
 			for (Recorrido r : frente.getCamino()) {
 				Point p = r.getCoordenadas();
-				Baldosa b = r.getHabitacion().obtenerBaldosa(p.getX(), p.getY());
+				Baldosa b = r.getHabitacion().getBaldosa(p.getX(), p.getY());
 				if (b != null) {
 					g2.setPaint(colores[colorFrente]);
 					g2.fill(b.getInterior());
@@ -349,7 +330,7 @@ class Dibujo extends JComponent {
 			escribir(g2, 20, getHeight() - (int) (borde / 6), 0, "Baldosas: " + darMedida(seleccionada.getLado()));
 		}
 		if (puntoOrig != null && piso.getHabitaciones().contains(habitacionOrig)) {
-			Baldosa b = habitacionOrig.obtenerBaldosa(puntoOrig.getX(), puntoOrig.getY());
+			Baldosa b = habitacionOrig.getBaldosa(puntoOrig.getX(), puntoOrig.getY());
 			if (b != null) {
 				g2.setPaint(new Color(192, 192, 192, 128));
 				g2.fill(b.getForma());
@@ -386,16 +367,10 @@ class Dibujo extends JComponent {
 		escribir(g2, altura + 4, getHeight() / 2 + desvio, 270, o);
 	}
 
-	private void escribir(Graphics2D g2, int x, int y, int angulo, int valor) {
-		escribir(g2, x, y, angulo, String.valueOf(valor));
-	}
-
-	private void escribir(Graphics2D g2, int x, int y, int angulo, String valor) {
-		g2.translate(x, y);
-		g2.rotate(Math.toRadians(angulo));
-		g2.drawString(valor, 0, 0);
-		g2.rotate(-Math.toRadians(angulo));
-		g2.translate(-x, -y);
+	public String cambiarModo() {
+		seleccionada = null;
+		frente = null;
+		return modos[modo += (modo == 2) ? -2 : 1];
 	}
 
 	public void eliminar() {
@@ -408,6 +383,31 @@ class Dibujo extends JComponent {
 		orig = null;
 		actual = null;
 		seleccionada = null;
+	}
+
+	private boolean aux(Habitacion h) {
+		return actual.getX() + actual.getLargo() - h.getX() < actual.getY() + actual.getAlto() - h.getY();
+	}
+
+	private String darMedida(int valor) {
+		String medida = Integer.toString(valor * escala);
+		medida = new StringBuilder(medida).insert(medida.length() - 2, ".").toString();
+		if (medida.charAt(0) == '.') {
+			medida = new StringBuilder(medida).insert(0, "0").toString();
+		}
+		return medida + " " + unidad;
+	}
+
+	private void escribir(Graphics2D g2, int x, int y, int angulo, int valor) {
+		escribir(g2, x, y, angulo, String.valueOf(valor));
+	}
+
+	private void escribir(Graphics2D g2, int x, int y, int angulo, String valor) {
+		g2.translate(x, y);
+		g2.rotate(Math.toRadians(angulo));
+		g2.drawString(valor, 0, 0);
+		g2.rotate(-Math.toRadians(angulo));
+		g2.translate(-x, -y);
 	}
 
 	public int getEscala() {

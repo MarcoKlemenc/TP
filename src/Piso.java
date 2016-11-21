@@ -14,6 +14,32 @@ public class Piso {
 	private List<Trayectoria> trayectorias = new ArrayList<Trayectoria>();
 	private Map<Habitacion, Set<Habitacion>> adyacencias = new HashMap<Habitacion, Set<Habitacion>>();
 
+	public void agregarHabitacion(Habitacion h) {
+		habitaciones.add(h);
+		adyacencias.put(h, new HashSet<Habitacion>());
+	}
+
+	public void agregarPuerta(StringTokenizer s) {
+		agregarPuerta(Integer.parseInt(s.nextToken()), Integer.parseInt(s.nextToken()), Integer.parseInt(s.nextToken()),
+				Integer.parseInt(s.nextToken()), getHabitacion(Integer.parseInt(s.nextToken())),
+				getHabitacion(Integer.parseInt(s.nextToken())), Boolean.valueOf(s.nextToken()));
+	}
+
+	public void agregarPuerta(int x, int y, int largo, int alto, Habitacion h1, Habitacion h2, boolean vertical) {
+		puertas.add(new Puerta(x, y, largo, alto, h1, h2, vertical));
+		adyacencias.get(h1).add(h2);
+		adyacencias.get(h2).add(h1);
+	}
+	
+	public Habitacion baldosaDentro(Baldosa b) {
+		for (Habitacion h : habitaciones) {
+			if (h.contieneBaldosa(b)) {
+				return h;
+			}
+		}
+		return null;
+	}
+
 	public boolean contienePuertaV(Habitacion h1, Habitacion h2, MouseEvent e) {
 		return h1 != h2 && h1.contiene(e.getX() - 5, e.getY()) && h2.contiene(e.getX() + 5, e.getY());
 	}
@@ -21,10 +47,15 @@ public class Piso {
 	public boolean contienePuertaH(Habitacion h1, Habitacion h2, MouseEvent e) {
 		return h1 != h2 && h1.contiene(e.getX(), e.getY() - 5) && h2.contiene(e.getX(), e.getY() + 5);
 	}
-
-	public void agregarHabitacion(Habitacion h) {
-		habitaciones.add(h);
-		adyacencias.put(h, new HashSet<Habitacion>());
+	
+	public List<Habitacion> cruza(Habitacion o) {
+		List<Habitacion> l = new ArrayList<Habitacion>();
+		for (Habitacion h : habitaciones) {
+			if (o.intersecta(h)) {
+				l.add(h);
+			}
+		}
+		return l;
 	}
 
 	public void eliminarHabitacion(Habitacion h) {
@@ -49,20 +80,21 @@ public class Piso {
 		habitaciones.remove(h);
 	}
 
-	public Trayectoria buscarTrayectoria(MouseEvent e, Baldosa b) {
-		for (Trayectoria t : trayectorias) {
-			for (Habitacion h : habitaciones) {
-				if (t.buscar(h, b.getCoordenadas()) && t.getHabitaciones().contains(h)
-						&& h.contiene(e.getX(), e.getY())) {
-					return t;
-				}
+	public void eliminarPuerta(Puerta p) {
+		puertas.remove(p);
+		Habitacion h1 = p.getH1();
+		Habitacion h2 = p.getH2();
+		for (Puerta pu : puertas) {
+			if (pu.getH1() == h1 && pu.getH2() == h2) {
+				return;
 			}
 		}
-		return null;
+		adyacencias.get(h1).remove(h2);
+		adyacencias.get(h2).remove(h1);
 	}
 
 	public boolean eliminarTrayectoria(MouseEvent e, Baldosa b) {
-		Trayectoria t = buscarTrayectoria(e, b);
+		Trayectoria t = getTrayectoria(e, b);
 		if (t != null) {
 			trayectorias.remove(t);
 			return true;
@@ -143,32 +175,7 @@ public class Piso {
 		}
 	}
 
-	public void agregarPuerta(int x, int y, int largo, int alto, Habitacion h1, Habitacion h2, boolean vertical) {
-		puertas.add(new Puerta(x, y, largo, alto, h1, h2, vertical));
-		adyacencias.get(h1).add(h2);
-		adyacencias.get(h2).add(h1);
-	}
-
-	public void agregarPuerta(StringTokenizer s) {
-		agregarPuerta(Integer.parseInt(s.nextToken()), Integer.parseInt(s.nextToken()), Integer.parseInt(s.nextToken()),
-				Integer.parseInt(s.nextToken()), buscarId(Integer.parseInt(s.nextToken())),
-				buscarId(Integer.parseInt(s.nextToken())), Boolean.valueOf(s.nextToken()));
-	}
-
-	public void eliminarPuerta(Puerta p) {
-		puertas.remove(p);
-		Habitacion h1 = p.getH1();
-		Habitacion h2 = p.getH2();
-		for (Puerta pu : puertas) {
-			if (pu.getH1() == h1 && pu.getH2() == h2) {
-				return;
-			}
-		}
-		adyacencias.get(h1).remove(h2);
-		adyacencias.get(h2).remove(h1);
-	}
-
-	public Habitacion buscarId(int id) {
+	public Habitacion getHabitacion(int id) {
 		for (Habitacion h : habitaciones) {
 			if (h.getId() == id) {
 				return h;
@@ -177,16 +184,7 @@ public class Piso {
 		return null;
 	}
 
-	public Habitacion baldosaDentro(Baldosa b) {
-		for (Habitacion h : habitaciones) {
-			if (h.contieneBaldosa(b)) {
-				return h;
-			}
-		}
-		return null;
-	}
-
-	public List<Habitacion> contiene(MouseEvent e) {
+	public List<Habitacion> getHabitaciones(MouseEvent e) {
 		List<Habitacion> l = new ArrayList<Habitacion>();
 		for (Habitacion h : habitaciones) {
 			if (h.contiene(e.getX(), e.getY())) {
@@ -196,7 +194,7 @@ public class Piso {
 		return l;
 	}
 
-	public Puerta contieneP(MouseEvent e) {
+	public Puerta getPuerta(MouseEvent e) {
 		for (Puerta p : puertas) {
 			if (p.contiene(e.getX(), e.getY())) {
 				return p;
@@ -205,14 +203,16 @@ public class Piso {
 		return null;
 	}
 
-	public List<Habitacion> cruza(Habitacion o) {
-		List<Habitacion> l = new ArrayList<Habitacion>();
-		for (Habitacion h : habitaciones) {
-			if (o.intersecta(h)) {
-				l.add(h);
+	public Trayectoria getTrayectoria(MouseEvent e, Baldosa b) {
+		for (Trayectoria t : trayectorias) {
+			for (Habitacion h : habitaciones) {
+				if (t.buscar(h, b.getCoordenadas()) && t.getHabitaciones().contains(h)
+						&& h.contiene(e.getX(), e.getY())) {
+					return t;
+				}
 			}
 		}
-		return l;
+		return null;
 	}
 
 	public List<Habitacion> getHabitaciones() {
@@ -230,5 +230,4 @@ public class Piso {
 	public Map<Habitacion, Set<Habitacion>> getAdyacencias() {
 		return adyacencias;
 	}
-
 }
