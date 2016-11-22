@@ -5,10 +5,6 @@
 
 El proyecto, realizado por nosotros, consiste en una aplicación cuyo objetivo es la creación y edición de mapas para la navegación de robots. La misma cuenta con un conjunto de habitaciones y caminos (trayectorias), al igual que obstáculos, que sirven para el modelado de los mapas. 
 
-### Ajustes de interfaz
-
-Es posible ajustar el tamaño del borde y la grilla girando la rueda sobre los mismos (para ajustar el tamaño de la grilla no debe haber ninguna aplicación seleccionada).
-
 ### Pisos de demostración
 
 * **pisoEjemplo.txt:** un piso creado al azar demostrando algunas de las funcionalidades, como la posibilidad de crear varias trayectorias superpuestas, de crear trayectorias que recorran 3 habitaciones, o cómo las trayectorias bordean obstáculos.

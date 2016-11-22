@@ -20,7 +20,7 @@ class Dibujo extends JComponent {
 	private Piso piso = new Piso();
 	private Point inicio, fin, puntoOrig;
 	private Puerta puertaActual;
-	private int desvioX, desvioY, orientacion, modo, escala = 5, borde = 20, grilla = 100;
+	private int desvioX, desvioY, orientacion, modo, escala = 5;
 	private Habitacion actual, temp, habitacionOrig, seleccionada;
 	private Recorrido orig, dest;
 	private String unidad = "m";
@@ -241,13 +241,6 @@ class Dibujo extends JComponent {
 					seleccionada.setLado(Math.max(2, Math.min(seleccionada.getLado() + e.getWheelRotation() * 4,
 							Math.min(seleccionada.getLargo(), seleccionada.getAlto()))));
 					seleccionada.generarBaldosas();
-				} else if (e.getX() <= borde || e.getY() <= borde || e.getX() >= getWidth() - borde
-						|| e.getY() >= getHeight() - borde) {
-					borde = Math.max(0,
-							Math.min(borde + e.getWheelRotation() * 2, Math.min(getWidth(), getHeight()) / 3));
-				} else {
-					grilla = Math.max(2,
-							Math.min(grilla + e.getWheelRotation() * 2, Math.min(getWidth(), getHeight()) / 3));
 				}
 				repaint();
 			}
@@ -258,13 +251,13 @@ class Dibujo extends JComponent {
 		Graphics2D g2 = (Graphics2D) g;
 		int altura = g2.getFontMetrics().getHeight() / 2;
 		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		g2.setFont(new Font("Calibri", Font.PLAIN, (int) (borde / 1.2)));
+		g2.setFont(new Font("Calibri", Font.PLAIN, 16));
 		g2.setPaint(Color.WHITE);
-		g2.fillRect(borde, borde, getWidth() - borde * 2, getHeight() - borde * 2);
+		g2.fillRect(20, 20, getWidth() - 40, getHeight() - 40);
 		g2.setPaint(new Color(238, 238, 238));
-		for (int i = borde - 1; i < getWidth() - borde; i += grilla) {
-			for (int j = borde - 1; j < getHeight() - borde; j += grilla) {
-				g2.draw(new Rectangle2D.Float(i, j, grilla, grilla));
+		for (int i = 20 - 1; i < getWidth() - 20; i += 100) {
+			for (int j = 20 - 1; j < getHeight() - 20; j += 100) {
+				g2.draw(new Rectangle2D.Float(i, j, 100, 100));
 			}
 		}
 		Color[] colores = { new Color(192, 255, 255), new Color(192, 255, 192), new Color(255, 255, 192),
@@ -328,7 +321,7 @@ class Dibujo extends JComponent {
 			medida = darMedida(seleccionada.getAlto());
 			escribir(g2, seleccionada.getX() + altura + 4, seleccionada.getY() + seleccionada.getAlto() / 2 + desvio,
 					270, medida);
-			escribir(g2, 20, getHeight() - (int) (borde / 6), 0, "Baldosas: " + darMedida(seleccionada.getLado()));
+			escribir(g2, 20, getHeight() - 3, 0, "Baldosas: " + darMedida(seleccionada.getLado()));
 		}
 		if (puntoOrig != null && piso.getHabitaciones().contains(habitacionOrig)) {
 			Baldosa b = habitacionOrig.getBaldosa(puntoOrig.getX(), puntoOrig.getY());
@@ -355,15 +348,15 @@ class Dibujo extends JComponent {
 			g2.fill(temp.getForma());
 		}
 		g2.setPaint(Color.BLACK);
-		g2.drawLine(borde, borde - 1, borde + grilla - 1, borde - 1);
-		g2.drawString(String.valueOf(escala) + " " + unidad, borde, borde - 2);
+		g2.drawLine(20, 19, 119, 19);
+		g2.drawString(String.valueOf(escala) + " " + unidad, 20, 18);
 		int o = orientacion;
 		int desvio = g2.getFontMetrics().stringWidth(String.valueOf(o)) / 2;
-		escribir(g2, getWidth() / 2 - desvio, (int) (borde / 1.5), 0, o);
+		escribir(g2, getWidth() / 2 - desvio, 13, 0, o);
 		desvio = g2.getFontMetrics().stringWidth(String.valueOf(o += (o >= 270) ? -270 : 90)) / 2;
 		escribir(g2, getWidth() - altura - 4, getHeight() / 2 - desvio, 90, o);
 		desvio = g2.getFontMetrics().stringWidth(String.valueOf(o += (o >= 270) ? -270 : 90)) / 2;
-		escribir(g2, getWidth() / 2 - desvio, getHeight() - (int) (borde / 6), 0, o);
+		escribir(g2, getWidth() / 2 - desvio, getHeight() - 3, 0, o);
 		desvio = g2.getFontMetrics().stringWidth(String.valueOf(o += (o >= 270) ? -270 : 90)) / 2;
 		escribir(g2, altura + 4, getHeight() / 2 + desvio, 270, o);
 	}
