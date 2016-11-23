@@ -8,6 +8,7 @@ El proyecto, realizado por nosotros, consiste en una aplicación cuyo objetivo es
 ### Pisos de demostración
 
 * **pisoEjemplo.txt:** un piso creado al azar demostrando algunas de las funcionalidades, como la posibilidad de crear varias trayectorias superpuestas, de crear trayectorias que recorran 3 habitaciones, o cómo las trayectorias bordean obstáculos.
+* **pisoSede2.txt:** un piso creado en base al segundo piso de sede 2, con las habitaciones y obstáculos correspondientes. No posee trayectorias.
 
 ### Menú
 
